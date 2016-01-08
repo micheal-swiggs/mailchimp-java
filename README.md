@@ -1,9 +1,23 @@
 
 
+This is a Java wrapper around the MailChimp API. Checkout `Example.groovy` for a simple demo.
 
-##### Running
+##### Running the Demo
 
     ./gradlew -b dev.gradle run
+
+## Maven / Gradle
+
+This library can be included as a JitPack dependency, e.g using gradle:
+
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
+
+    dependencies {
+        compile 'com.github.micheal-swiggs:mailchimp-java:v0.2.0'
+    }
+
 
 ##### Installing
 
