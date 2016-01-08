@@ -1,0 +1,15 @@
+apply from: "base.gradle"
+
+apply plugin: 'groovy'
+apply plugin: 'application'
+
+sourceSets.main.java.srcDirs = []
+sourceSets.main.groovy.srcDirs += ["src/main/java"]
+sourceSets.main.groovy.srcDirs += ["."]
+
+mainClassName = "com.mailchimp.Example"
+
+dependencies {
+    compile('org.codehaus.groovy:groovy-all:2.4.3')
+}
+
