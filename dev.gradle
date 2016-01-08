@@ -1,4 +1,4 @@
-apply from: "base.gradle"
+apply from: "build.gradle"
 
 apply plugin: 'groovy'
 apply plugin: 'application'
