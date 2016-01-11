@@ -1,5 +1,11 @@
 package com.mailchimp;
 
+import com.mailchimp.domain.ListDefault;
+import com.mailchimp.domain.MemberDefault;
+import com.mailchimp.domain.MemberListDefault;
+import com.mailchimp.domain.MergeField;
+import com.mailchimp.domain.MergeFieldsDefault;
+
 import feign.*;
 import feign.jackson.*;
 

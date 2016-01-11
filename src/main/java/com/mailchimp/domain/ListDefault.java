@@ -1,4 +1,4 @@
-package com.mailchimp;
+package com.mailchimp.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
