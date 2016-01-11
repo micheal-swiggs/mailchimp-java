@@ -18,6 +18,8 @@ public final class JsonConstants {
 
 	public static final String STATUS = "status";
 
+    public static final String STATUS_IF_NEW = "status_if_new";
+
 	public static final String MERGE_VARS = "merge_fields";
 
 	public static final String SIGNUP_DATE = "timestamp_signup";

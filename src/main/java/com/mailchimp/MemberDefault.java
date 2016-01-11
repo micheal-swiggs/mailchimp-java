@@ -33,8 +33,11 @@ public class MemberDefault
     @JsonProperty(value = JsonConstants.EMAIL, required = true)
     private String email;
 
-    @JsonProperty(value = JsonConstants.STATUS, required = true)
+    @JsonProperty(value = JsonConstants.STATUS)
     private SubscribeStatus subscribeStatus;
+
+    @JsonProperty(value = JsonConstants.STATUS_IF_NEW)
+    private SubscribeStatus statusIfNew;
 
     @JsonProperty(value = JsonConstants.LIST_ID)
     private String listId;
