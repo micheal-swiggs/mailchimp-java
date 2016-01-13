@@ -52,8 +52,8 @@ public class MemberDefault
     @JsonSerialize(using = FlexDateSerializer.class)
     private Date lastChanged;
 
-	@JsonProperty(JsonConstants.MERGE_VARS)
-	private Map<String, String> mergeVars;
+    @JsonProperty(JsonConstants.MERGE_VARS)
+    private Map<String, String> mergeVars;
 
     public String getSubscriberHash()
     {
