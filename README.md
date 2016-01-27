@@ -15,7 +15,7 @@ This library can be included as a JitPack dependency, e.g using gradle:
     }
 
     dependencies {
-        compile 'com.github.micheal-swiggs:mailchimp-java:v0.2.0'
+        compile 'com.github.micheal-swiggs:mailchimp-java:v0.4.1'
     }
 
 
