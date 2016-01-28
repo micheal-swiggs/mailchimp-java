@@ -47,10 +47,68 @@ public final class JsonConstants {
     public static final String MERGE_FIELDS = "merge_fields";
 
 
+	public static final String CONTACT = "contact";
+
+	public static final String COMPANY = "company";
+
+	public static final String ADDRESS1 = "address1";
+
+	public static final String ADDRESS2 = "address2";
+
+	public static final String CITY = "city";
+
+	public static final String STATE = "state";
+
+	public static final String ZIP = "zip";
+
+	public static final String COUNTRY = "country";
+
+	public static final String PHONE = "phone";
+
+
+    public static final String CAMPAIGN_DETAILS = "campaign_defaults";
+
+    public static final String FROM_NAME = "from_name";
+
+    public static final String FROM_EMAIL = "from_email";
+
+    public static final String SUBJECT = "subject";
+
+    public static final String LANGUAGE = "language";
+
+
+    public static final String OPERATIONS = "operations";
+
+    public static final String METHOD = "method";
+
+    public static final String PATH = "path";
+
+    public static final String BODY = "body";
+
+    public static final String PARAMS = "params";
+
+
+    // Batch
+    public static final String TOTAL_OPERATIONS = "total_operations";
+
+    public static final String FINISHED_OPERATIONS = "finished_operations";
+
+    public static final String ERRORED_OPERATIONS = "errored_operations";
+
+    public static final String RESPONSE_BODY_URL = "response_body_url";
+
+    public static final String SUBMITTED_AT = "submitted_at";
+
+    public static final String COMPLETED_AT = "completed_at";
+
+
+	public static final String PERMISSION_REMINDER = "permission_reminder";
+
+	public static final String EMAIL_TYPE_OPTION = "email_type_option";
+
 	private static final String TITLE = "title";
 
 	private static final String DETAIL = "detail";
-
 
 	private JsonConstants() {
 	}
