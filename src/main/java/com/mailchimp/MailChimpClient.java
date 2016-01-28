@@ -1,8 +1,13 @@
 package com.mailchimp;
 
-import com.mailchimp.domain.*;
-import feign.Param;
-import feign.RequestLine;
+import com.mailchimp.domain.ListDefault;
+import com.mailchimp.domain.MemberDefault;
+import com.mailchimp.domain.MemberListDefault;
+import com.mailchimp.domain.MergeField;
+import com.mailchimp.domain.MergeFieldsDefault;
+
+import feign.*;
+import feign.jackson.*;
 
 public interface MailChimpClient {
 
@@ -16,13 +21,10 @@ public interface MailChimpClient {
     public MemberDefault getListMember(@Param("list-id") String listId, @Param("user-id") String userId);
 
     @RequestLine("POST /3.0/lists/{list-id}/members")
-    public MemberDefault createMember (@Param("list-id") String listId, MemberCreate memberCreate);
+    public MemberDefault createMember (@Param("list-id") String listId, MemberDefault memberDefault);
 
     @RequestLine("PUT /3.0/lists/{list-id}/members/{subscriber-hash}")
     public MemberDefault updateMember (@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash, MemberDefault memberDefault);
-
-    @RequestLine("POST /3.0/lists")
-    public ListDefault createList(ListDefault listDefault);
 
     @RequestLine("GET /3.0/lists/{list-id}")
     public ListDefault getMembersList(@Param("list-id") String listId);
@@ -38,10 +40,4 @@ public interface MailChimpClient {
 
     @RequestLine("POST /3.0/lists/{list-id}/merge-fields")
     public MergeField createMergeField(@Param("list-id") String listId, MergeField mergeField);
-
-    @RequestLine("POST /3.0/batches")
-    public Batch createMembersBatch(MemberCreateBatch batch);
-
-    @RequestLine("GET /3.0/batches/{batch-id}")
-    public Batch getBatch(@Param("batch-id") String batchId);
 }
