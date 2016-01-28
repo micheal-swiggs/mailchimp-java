@@ -9,11 +9,6 @@ import lombok.Data;
 public class MemberCreateOperation extends OperationDefault
 {
     @JsonProperty(value = JsonConstants.BODY)
-    @JsonSerialize(using=MemberCreateSerializer.class)
+    @JsonSerialize(using = MemberCreateSerializer.class)
     private MemberCreate body;
-
-    public void setBody(MemberCreate body)
-    {
-        this.body = body;
-    }
 }

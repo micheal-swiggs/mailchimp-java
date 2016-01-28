@@ -10,6 +10,7 @@ import lombok.Data;
 import java.util.Date;
 import java.util.Map;
 import java.security.MessageDigest;
+
 import org.apache.commons.codec.binary.Hex;
 
 
@@ -22,28 +23,12 @@ public class MemberDefault extends MemberCreate
     @JsonProperty(value = JsonConstants.ID)
     private String id;
 
-    public String getId()
-    {
-        return id;
-    }
-
     @JsonProperty(value = JsonConstants.MEMBER_RATING)
     private Integer memberRating;
-
-    public Integer getMemberRating()
-    {
-        return memberRating;
-    }
-
 
     @JsonProperty(value = JsonConstants.SIGNUP_DATE)
     @JsonDeserialize(using = FlexDateDeserializer.class)
     private Date signupDate;
-
-    public Date getSignupDate()
-    {
-        return signupDate;
-    }
 
     @JsonProperty(value = JsonConstants.STATUS_IF_NEW)
     private SubscribeStatus statusIfNew;
@@ -61,11 +46,14 @@ public class MemberDefault extends MemberCreate
 
     public String getSubscriberHash()
     {
-        try{
+        try
+        {
             MessageDigest md = MessageDigest.getInstance("MD5");
             return Hex.encodeHexString(md.digest(email.toLowerCase().getBytes("UTF-8")));
-        } catch (Exception e) {
-             throw new RuntimeException(e);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -10,9 +10,4 @@ public class MemberCreateBatch
 {
     @JsonProperty(value = JsonConstants.OPERATIONS)
     private List<MemberCreateOperation> operations;
-
-    public void setOperations(List<MemberCreateOperation> operations)
-    {
-        this.operations = operations;
-    }
 }

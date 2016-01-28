@@ -10,46 +10,6 @@ import java.util.Date;
 @Data
 public class Batch
 {
-    public String getId()
-    {
-        return id;
-    }
-
-    public String getStatus()
-    {
-        return status;
-    }
-
-    public Integer getTotalOperations()
-    {
-        return totalOperations;
-    }
-
-    public Integer getFinishedOperations()
-    {
-        return finishedOperations;
-    }
-
-    public Integer getErroredOperations()
-    {
-        return erroredOperations;
-    }
-
-    public Date getSubmittedAt()
-    {
-        return submittedAt;
-    }
-
-    public Date getCompletedAt()
-    {
-        return completedAt;
-    }
-
-    public String getResponseBodyUrl()
-    {
-        return responseBodyUrl;
-    }
-
     @JsonProperty(value = JsonConstants.ID)
     private String id;
 

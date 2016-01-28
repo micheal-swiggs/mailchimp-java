@@ -4,8 +4,8 @@ import com.mailchimp.domain.*;
 import feign.Param;
 import feign.RequestLine;
 
-public interface MailChimpClient {
-
+public interface MailChimpClient
+{
     //@RequestLine("GET /3.0/lists")
     //Object callLists();
 
@@ -16,10 +16,10 @@ public interface MailChimpClient {
     public MemberDefault getListMember(@Param("list-id") String listId, @Param("user-id") String userId);
 
     @RequestLine("POST /3.0/lists/{list-id}/members")
-    public MemberDefault createMember (@Param("list-id") String listId, MemberCreate memberCreate);
+    public MemberDefault createMember(@Param("list-id") String listId, MemberCreate memberCreate);
 
     @RequestLine("PUT /3.0/lists/{list-id}/members/{subscriber-hash}")
-    public MemberDefault updateMember (@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash, MemberDefault memberDefault);
+    public MemberDefault updateMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash, MemberDefault memberDefault);
 
     @RequestLine("POST /3.0/lists")
     public ListDefault createList(ListDefault listDefault);
