@@ -8,9 +8,9 @@ import feign.auth.BasicAuthRequestInterceptor;
 
 public class MailChimpFactory
 {
-    static String mailChimpApi (String i)
+    static String mailChimpApi(String i)
     {
-        return "https://"+i+".api.mailchimp.com";
+        return "https://" + i + ".api.mailchimp.com";
     }
 
     public static MailChimpClient createWithBasicAuth (String apiKey, String apiBase)
