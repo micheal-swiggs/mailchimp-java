@@ -9,8 +9,8 @@ public interface MailChimpClient
     //@RequestLine("GET /3.0/lists/{list-id}")
     //public Object callList(@Param("list-id") String listId);
 
-    @RequestLine("GET /3.0/lists/{list-id}/members/{user-id}")
-    MemberDefault getListMember(@Param("list-id") String listId, @Param("user-id") String userId);
+    @RequestLine("GET /3.0/lists/{list-id}/members/{subscriber-hash}")
+    MemberDefault getListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
 
     @RequestLine("POST /3.0/lists/{list-id}/members")
     MemberDefault createMember(@Param("list-id") String listId, MemberCreate memberCreate);
