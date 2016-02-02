@@ -6,9 +6,6 @@ import feign.RequestLine;
 
 public interface MailChimpClient
 {
-    //@RequestLine("GET /3.0/lists")
-    //Object callLists();
-
     //@RequestLine("GET /3.0/lists/{list-id}")
     //public Object callList(@Param("list-id") String listId);
 
@@ -26,6 +23,9 @@ public interface MailChimpClient
 
     @RequestLine("POST /3.0/lists")
     ListDefault createList(ListDefault listDefault);
+
+    @RequestLine("GET /3.0/lists")
+    ListsDefault getLists();
 
     @RequestLine("GET /3.0/lists/{list-id}")
     ListDefault getMembersList(@Param("list-id") String listId);
