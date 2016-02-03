@@ -30,9 +30,6 @@ public interface MailChimpClient
     @RequestLine("GET /3.0/lists/{list-id}")
     ListDefault getMembersList(@Param("list-id") String listId);
 
-    @RequestLine("GET /3.0/lists/{list-id}/members")
-    MemberListDefault getAllListMembers(@Param("list-id") String listId);
-
     @RequestLine("GET /3.0/lists/{list-id}/members?offset={offset}&count={count}")
     MemberListDefault getPagedListMembers(@Param("list-id") String listId, @Param("offset") Integer offset, @Param("count") Integer count);
 
