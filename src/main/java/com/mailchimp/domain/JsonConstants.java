@@ -6,6 +6,10 @@ package com.mailchimp.domain;
  */
 public final class JsonConstants {
 
+	public static final String ACCOUNT_ID = "account_id";
+
+	public static final String ACCOUNT_NAME = "account_name";
+
     public static final String ID = "id";
 
     public static final String MEMBER_RATING = "member_rating";
