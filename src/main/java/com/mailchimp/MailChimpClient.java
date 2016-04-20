@@ -27,6 +27,9 @@ public interface MailChimpClient
     @RequestLine("POST /3.0/lists")
     ListDefault createList(ListDefault listDefault);
 
+    @RequestLine("DELETE /3.0/lists/{list-id}")
+    void removeList(@Param("list-id") String listId);
+
     @RequestLine("GET /3.0/lists")
     ListsDefault getLists();
 
