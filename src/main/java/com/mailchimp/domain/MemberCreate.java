@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class MemberCreate<F extends MemberMergeFields>
+public class MemberCreate
 {
     @JsonProperty(value = JsonConstants.MERGE_FIELDS)
-    protected F memberMergeFields;
+    protected MemberMergeFields memberMergeFields;
 
     @JsonProperty(value = JsonConstants.EMAIL, required = true)
     protected String email;
