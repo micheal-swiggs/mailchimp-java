@@ -50,6 +50,8 @@ public final class JsonConstants {
 
     public static final String TAG = "tag";
 
+	public static final String REQUIRED = "required";
+
     public static final String MERGE_FIELDS = "merge_fields";
 
 
