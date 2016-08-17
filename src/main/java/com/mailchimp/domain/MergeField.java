@@ -31,5 +31,5 @@ public class MergeField
     private String tag;
 
     @JsonProperty(value = JsonConstants.REQUIRED)
-    private boolean required;
+    private boolean required = true;
 }
