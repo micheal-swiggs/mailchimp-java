@@ -13,7 +13,7 @@ public class MergeField
     {
     }
 
-    public MergeField(String name, MergeType type, String tag, Boolean required)
+    public MergeField(String name, MergeType type, String tag, boolean required)
     {
         this.name = name;
         this.type = type;
@@ -31,5 +31,5 @@ public class MergeField
     private String tag;
 
     @JsonProperty(value = JsonConstants.REQUIRED)
-    private Boolean required;
+    private boolean required;
 }
