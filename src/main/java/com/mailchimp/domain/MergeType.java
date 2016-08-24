@@ -11,7 +11,13 @@ public enum MergeType
     Number("number"),
     Radio("radio"),
     Birthday("birthday"),
-    Date("date");
+    Date("date"),
+    Dropdown("dropdown"),
+    Address("address"),
+    Zip("zip"),
+    Phone("phone"),
+    URL("url"),
+    ImageURL("imageurl");
 
     private String value;
 
