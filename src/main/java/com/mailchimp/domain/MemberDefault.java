@@ -42,7 +42,7 @@ public class MemberDefault extends MemberCreate
     private Date lastChanged;
 
     @JsonProperty(JsonConstants.MERGE_VARS)
-    private Map<String, String> mergeVars;
+    private Map<String, Object> mergeVars;
 
     public String getSubscriberHash()
     {
