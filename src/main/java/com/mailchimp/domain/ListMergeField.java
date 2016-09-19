@@ -7,21 +7,20 @@ import lombok.Data;
  * @author Micheal Swiggs
  */
 @Data
-public class MergeField
-{
-    private MergeField()
-    {
+public class ListMergeField {
+
+    private ListMergeField() {
     }
 
-    @JsonProperty(value = JsonConstants.NAME)
+    @JsonProperty
     private String name;
 
-    @JsonProperty(value = JsonConstants.TYPE)
+    @JsonProperty
     private MergeType type;
 
-    @JsonProperty(value = JsonConstants.TAG)
+    @JsonProperty
     private String tag;
 
-    @JsonProperty(value = JsonConstants.REQUIRED)
+    @JsonProperty
     private Boolean required;
 }

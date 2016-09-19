@@ -3,36 +3,35 @@ package com.mailchimp.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mailchimp.jackson.MailChimpZonedDateTimeDeserializer;
+import java.util.Date;
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
-public class Batch
-{
-    @JsonProperty(value = JsonConstants.ID)
+public class Batch {
+
+    @JsonProperty("id")
     private String id;
 
-    @JsonProperty(value = JsonConstants.STATS)
+    @JsonProperty("status")
     private String status;
 
-    @JsonProperty(value = JsonConstants.TOTAL_OPERATIONS)
+    @JsonProperty("total_operations")
     private Integer totalOperations;
 
-    @JsonProperty(value = JsonConstants.FINISHED_OPERATIONS)
+    @JsonProperty("finished_operations")
     private Integer finishedOperations;
 
-    @JsonProperty(value = JsonConstants.ERRORED_OPERATIONS)
+    @JsonProperty("errored_operations")
     private Integer erroredOperations;
 
-    @JsonProperty(value = JsonConstants.SUBMITTED_AT)
+    @JsonProperty("submitted_at")
     @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
     private Date submittedAt;
 
-    @JsonProperty(value = JsonConstants.COMPLETED_AT)
+    @JsonProperty("completed_at")
     @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
     private Date completedAt;
 
-    @JsonProperty(value = JsonConstants.RESPONSE_BODY_URL)
+    @JsonProperty("response_body_url")
     private String responseBodyUrl;
 }

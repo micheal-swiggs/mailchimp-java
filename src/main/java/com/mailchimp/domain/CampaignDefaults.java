@@ -4,18 +4,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class CampaignDefaults
-{
-    @JsonProperty(value = JsonConstants.FROM_NAME)
+public class CampaignDefaults {
+
+    @JsonProperty("from_name")
     private String fromName;
 
-    @JsonProperty(value = JsonConstants.FROM_EMAIL)
+    @JsonProperty("from_email")
     private String fromEmail;
 
-    @JsonProperty(value = JsonConstants.SUBJECT)
+    @JsonProperty
     private String subject;
 
-    @JsonProperty(value = JsonConstants.LANGUAGE)
+    @JsonProperty
     private String language;
 
 }

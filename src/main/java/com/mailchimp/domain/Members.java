@@ -1,23 +1,21 @@
 package com.mailchimp.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 /**
  * @author Micheal Swiggs
  */
 @Data
-public class MemberListDefault
-{
-    @JsonProperty(value = JsonConstants.MEMBERS)
+public class Members {
+
+    @JsonProperty("members")
     private List<Member> members;
 
-    @JsonProperty(value = JsonConstants.LIST_ID)
+    @JsonProperty("list_id")
     private String listId;
 
-    @JsonProperty(value = JsonConstants.TOTAL_ITEMS)
+    @JsonProperty("total_items")
     private Integer totalItems;
 }

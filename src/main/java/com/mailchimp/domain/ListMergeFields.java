@@ -8,11 +8,11 @@ import lombok.Data;
  * @author Micheal Swiggs
  */
 @Data
-public class MergeFieldsDefault {
+public class ListMergeFields {
 
-    @JsonProperty(value = "total_items")
+    @JsonProperty("total_items")
     private Integer totalItems;
 
-    @JsonProperty(value = "merge_fields")
-    private List<MergeField> mergeFields;
+    @JsonProperty("merge_fields")
+    private List<ListMergeField> mergeFields;
 }

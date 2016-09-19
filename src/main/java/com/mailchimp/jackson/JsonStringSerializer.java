@@ -5,13 +5,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.mailchimp.domain.Member;
 import java.io.IOException;
 
-public class MemberCreateSerializer extends JsonSerializer<Member> {
+public class JsonStringSerializer extends JsonSerializer<Object> {
 
     @Override
-    public void serialize(Member value, JsonGenerator jgen, SerializerProvider provider)
+    public void serialize(Object value, JsonGenerator jgen, SerializerProvider provider)
             throws IOException, JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();

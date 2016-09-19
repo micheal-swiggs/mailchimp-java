@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class AccountDefault {
+public class Account {
 
-    @JsonProperty(value = JsonConstants.ACCOUNT_ID)
+    @JsonProperty("account_id")
     private String accountId;
 
-    @JsonProperty(value = JsonConstants.ACCOUNT_NAME)
+    @JsonProperty("account_name")
     private String accountName;
 
-    @JsonProperty(value = JsonConstants.CONTACT)
+    @JsonProperty("contact")
     private Contact contact;
 }
