@@ -8,6 +8,7 @@ import com.mailchimp.jackson.MailChimpZonedDateTimeDeserializer;
 import com.mailchimp.jackson.MailChimpZonedDateTimeSerializer;
 import java.security.MessageDigest;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 import org.apache.commons.codec.binary.Hex;
@@ -16,10 +17,25 @@ import org.apache.commons.codec.binary.Hex;
  * @author Ed Bras
  */
 @Data
-public class MemberDefault extends MemberCreate {
+public class Member {
+
+    /**
+     * Default name for mergefield first name
+     */
+    public final static String MERGEFIELD_FNAME = "FNAME";
+    /*
+     * Default name for mergefield first name
+     */
+    public final static String MERGEFIELD_LNAME = "LNAME";
 
     @JsonProperty(value = JsonConstants.ID)
     private String id;
+
+    @JsonProperty(value = JsonConstants.EMAIL, required = true)
+    protected String email;
+
+    @JsonProperty(value = JsonConstants.STATUS)
+    protected SubscribeStatus subscribeStatus;
 
     @JsonProperty(value = JsonConstants.MEMBER_RATING)
     private Integer memberRating;
@@ -40,8 +56,20 @@ public class MemberDefault extends MemberCreate {
     @JsonSerialize(using = MailChimpZonedDateTimeSerializer.class)
     private ZonedDateTime lastChanged;
 
-    @JsonProperty(JsonConstants.MERGE_VARS)
-    private Map<String, Object> mergeVars;
+    @JsonProperty("merge_fields")
+    private Map<String, String> mergeFields = new HashMap<>();
+
+    public boolean hasMergeField(String name) {
+        return mergeFields.containsKey(name);
+    }
+
+    public String getMergeField(String name) {
+        return mergeFields.get(name);
+    }
+
+    public void putMergeField(String name, String value) {
+        mergeFields.put(name, value);
+    }
 
     @JsonIgnore
     public String getSubscriberHash() {

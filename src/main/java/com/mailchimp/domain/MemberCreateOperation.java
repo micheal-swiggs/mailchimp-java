@@ -6,9 +6,9 @@ import com.mailchimp.jackson.MemberCreateSerializer;
 import lombok.Data;
 
 @Data
-public class MemberCreateOperation extends OperationDefault
-{
+public class MemberCreateOperation extends OperationDefault {
+
     @JsonProperty(value = JsonConstants.BODY)
     @JsonSerialize(using = MemberCreateSerializer.class)
-    private MemberCreate body;
+    private Member body;
 }

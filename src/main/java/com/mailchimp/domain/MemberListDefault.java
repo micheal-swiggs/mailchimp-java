@@ -13,7 +13,7 @@ import java.util.List;
 public class MemberListDefault
 {
     @JsonProperty(value = JsonConstants.MEMBERS)
-    private List<MemberDefault> members;
+    private List<Member> members;
 
     @JsonProperty(value = JsonConstants.LIST_ID)
     private String listId;

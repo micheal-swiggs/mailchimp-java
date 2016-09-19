@@ -4,8 +4,7 @@ import com.mailchimp.domain.*;
 import feign.Param;
 import feign.RequestLine;
 
-public interface MailChimpClient
-{
+public interface MailChimpClient {
     //@RequestLine("GET /3.0/lists/{list-id}")
     //public Object callList(@Param("list-id") String listId);
 
@@ -13,13 +12,13 @@ public interface MailChimpClient
     AccountDefault getAccount();
 
     @RequestLine("GET /3.0/lists/{list-id}/members/{subscriber-hash}")
-    MemberDefault getListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
+    Member getListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
 
     @RequestLine("POST /3.0/lists/{list-id}/members")
-    MemberDefault createMember(@Param("list-id") String listId, MemberCreate memberCreate);
+    Member createMember(@Param("list-id") String listId, Member member);
 
     @RequestLine("PUT /3.0/lists/{list-id}/members/{subscriber-hash}")
-    MemberDefault updateMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash, MemberDefault memberDefault);
+    Member updateMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash, Member memberDefault);
 
     @RequestLine("DELETE /3.0/lists/{list-id}/members/{subscriber-hash}")
     void removeMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
