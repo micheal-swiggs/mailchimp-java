@@ -1,21 +1,27 @@
 package com.mailchimp.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
 public class CampaignDefaults {
 
     @JsonProperty("from_name")
+    @Getter
+    @Setter
     private String fromName;
 
     @JsonProperty("from_email")
+    @Getter
+    @Setter
     private String fromEmail;
 
-    @JsonProperty
+    @Getter
+    @Setter
     private String subject;
 
-    @JsonProperty
+    @Getter
+    @Setter
     private String language;
 
 }

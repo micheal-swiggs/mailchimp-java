@@ -16,6 +16,7 @@ import org.apache.commons.codec.binary.Hex;
 
 /**
  * @author Ed Bras
+ * @author stevensnoeijen
  */
 public class Member {
 
@@ -23,7 +24,7 @@ public class Member {
         html, text
     }
 
-    public static class MemberStats {
+    public static class SubscriberStats {
 
         @JsonProperty("avg_open_rate")
         @Getter
@@ -44,57 +45,30 @@ public class Member {
      */
     public final static String MERGEFIELD_LNAME = "LNAME";
 
-    @JsonProperty("id")
+    @JsonProperty
     @Getter
     private String id;
-
-    @JsonProperty("email_type")
-    @Getter
-    @Setter
-    private EmailType emailType;
 
     /**
      * You can not edit an existing member's e-mail-address.
      */
     @JsonProperty(value = "email_address", required = true)
     @Getter
+    protected String emailAddress;
+
+    @JsonProperty("unique_email_id")
+    @Getter
+    private String uniqueEmailId;
+
+    @JsonProperty("email_type")
+    @Getter
     @Setter
-    protected String email;
+    private EmailType emailType;
 
     @JsonProperty("status")
     @Getter
     @Setter
-    protected SubscribeStatus subscribeStatus;
-
-    @JsonProperty("member_rating")
-    @Getter
-    private Integer memberRating;
-
-    @JsonProperty("timestamp_signup")
-    @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
-    @JsonSerialize(using = MailChimpZonedDateTimeSerializer.class)
-    @Getter
-    @Setter
-    private ZonedDateTime timestampSignup;
-
-    /**
-     * When creating a subscriber that already exists this status will be used.
-     */
-    @JsonProperty("status_if_new")
-    @Getter
-    @Setter
-    private SubscribeStatus statusIfNew;
-
-    @JsonProperty("list_id")
-    @Getter
-    private String listId;
-
-    @JsonProperty("last_changed")
-    @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
-    @JsonSerialize(using = MailChimpZonedDateTimeSerializer.class)
-    @Getter
-    @Setter
-    private ZonedDateTime lastChanged;
+    protected SubscribeStatus status;
 
     @JsonProperty("merge_fields")
     @Getter
@@ -103,7 +77,43 @@ public class Member {
 
     @JsonProperty
     @Getter
+    @Setter
     private Map<String, Boolean> interests = new HashMap<>();
+
+    //@JsonProperty
+    //@Getter
+    //@JsonIgnore
+    //private SubscriberStats stats = new SubscriberStats();
+    @JsonProperty("ip_signup")
+    @Getter
+    private String ipSignup;
+
+    @JsonProperty("timestamp_signup")
+    @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = MailChimpZonedDateTimeSerializer.class)
+    @Getter
+    @Setter
+    private ZonedDateTime timestampSignup;
+
+    @JsonProperty("ip_opt")
+    @Getter
+    private String ipOpt;
+
+    @JsonProperty("timestamp_opt")
+    @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
+    @Getter
+    private ZonedDateTime timestampOpt;
+
+    @JsonProperty("member_rating")
+    @Getter
+    private Integer memberRating;
+
+    @JsonProperty("last_changed")
+    @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = MailChimpZonedDateTimeSerializer.class)
+    @Getter
+    @Setter
+    private ZonedDateTime lastChanged;
 
     @JsonProperty
     @Getter
@@ -113,15 +123,35 @@ public class Member {
     @JsonProperty
     @Getter
     @Setter
-    private Boolean vip;
+    private boolean vip;
+
+    @JsonProperty("email_client")
+    @Getter
+    @Setter
+    private String emailClient;
 
     @JsonProperty
     @Getter
-    private Location location = new Location();
+    @Setter
+    private Location location;
 
-    @JsonProperty
+    /**
+     * When creating a subscriber that already exists this status will be used.
+     */
+    /* @JsonProperty("status_if_new")
+     * @Getter
+     * @Setter
+     * private SubscribeStatus statusIfNew; */
+    @JsonProperty("list_id")
     @Getter
-    private MemberStats stats = new MemberStats();
+    private String listId;
+
+    public Member() {
+    }
+
+    public Member(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
 
     public boolean hasMergeField(String name) {
         return mergeFields.containsKey(name);
@@ -139,7 +169,7 @@ public class Member {
     public String getSubscriberHash() {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            return Hex.encodeHexString(md.digest(email.toLowerCase().getBytes("UTF-8")));
+            return Hex.encodeHexString(md.digest(emailAddress.toLowerCase().getBytes("UTF-8")));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

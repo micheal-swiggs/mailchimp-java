@@ -16,6 +16,7 @@ public class MailChimpFactory {
         MailChimpClient mailChimp = Feign.builder()
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
+                .errorDecoder(new MailChimpErrorDecoder())
                 .requestInterceptor(new BasicAuthRequestInterceptor("anyString", apiKey))
                 .target(MailChimpClient.class, mailChimpApi(apiBase));
         return mailChimp;
@@ -25,6 +26,7 @@ public class MailChimpFactory {
         MailChimpClient mailChimp = Feign.builder()
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
+                .errorDecoder(new MailChimpErrorDecoder())
                 .requestInterceptor(new OAuthRequestInterceptor(accessToken))
                 .target(MailChimpClient.class, mailChimpApi(apiBase));
         return mailChimp;

@@ -6,6 +6,8 @@ import feign.RequestLine;
 
 public interface MailChimpClient {
 
+    public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
+
     @RequestLine("GET /3.0/")
     Account getAccount();
 
@@ -22,10 +24,13 @@ public interface MailChimpClient {
     void removeListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
 
     @RequestLine("POST /3.0/lists")
-    List createList(List listDefault);
+    List createList(List list);
 
     @RequestLine("DELETE /3.0/lists/{list-id}")
     void removeList(@Param("list-id") String listId);
+
+    @RequestLine("GET /3.0/lists/{list-id}")
+    List getList(@Param("list-id") String listId);
 
     @RequestLine("GET /3.0/lists")
     Lists getLists();
@@ -36,11 +41,14 @@ public interface MailChimpClient {
     @RequestLine("GET /3.0/lists/{list-id}/members?offset={offset}&count={count}")
     Members getListMembers(@Param("list-id") String listId, @Param("offset") Integer offset, @Param("count") Integer count);
 
-    @RequestLine("GET /3.0/lists/{list-id}/merge-fields?count={count}")
-    ListMergeFields getListMergeFields(@Param("list-id") String listId, @Param("count") Integer count);
+    @RequestLine("GET /3.0/lists/{list-id}/merge-fields")
+    ListMergeFields getListMergeFields(@Param("list-id") String listId);
 
     @RequestLine("POST /3.0/lists/{list-id}/merge-fields")
     ListMergeField createMergeField(@Param("list-id") String listId, ListMergeField mergeField);
+
+    @RequestLine("DELETE /lists/{list-id}/merge-fields/{merge-id}")
+    void removeListMergeField(@Param("list-id") String listId, @Param("merge-id") String mergeId);
 
     @RequestLine("POST /3.0/batches")
     Batch createBatch(CreateBatch batch);

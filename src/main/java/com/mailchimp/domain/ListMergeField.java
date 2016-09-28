@@ -9,18 +9,15 @@ import lombok.Data;
 @Data
 public class ListMergeField {
 
-    private ListMergeField() {
-    }
+    @JsonProperty
+    private String tag;
 
     @JsonProperty
     private String name;
 
     @JsonProperty
-    private MergeType type;
-
-    @JsonProperty
-    private String tag;
-
-    @JsonProperty
     private Boolean required;
+
+    @JsonProperty
+    private MergeType type;
 }
