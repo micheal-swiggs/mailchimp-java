@@ -23,7 +23,8 @@ import static org.junit.Assert.*;
 public class MailChimpClientTest {
 
     private final MailChimpClient mailChimpClient;
-    private final String listID;
+    private final String email;
+    private String listID;
 
     public MailChimpClientTest() throws IOException {
         Properties properties = new Properties();
@@ -31,7 +32,7 @@ public class MailChimpClientTest {
 
         String apiKey = properties.getProperty("apiKey");
         String apiBase = properties.getProperty("apiBase");
-        listID = properties.getProperty("listID");
+        email = properties.getProperty("email");
 
         mailChimpClient = MailChimpFactory.createWithBasicAuth(apiKey, apiBase);
     }
@@ -59,31 +60,38 @@ public class MailChimpClientTest {
         list.getContact().setZip("57062");
         list.getContact().setCountry("US");
         list.setPermissionReminder("MailChimp test");
+        list.getCampaignDefaults().setFromName("MailChimp test");
+        list.getCampaignDefaults().setFromEmail(email);
+        list.getCampaignDefaults().setSubject("");
+        list.getCampaignDefaults().setLanguage("en");
+        list.setEmailTypeOption(false);
 
-        mailChimpClient.createList(list);
-
-        fail();
+        list = mailChimpClient.createList(list);
+        assertNotNull(list);
+        listID = list.getId();
     }
 
     @Test
     @InSequence(3)
     public void getList() {
-        fail();
+        List list = mailChimpClient.getList(listID);
+        assertNotNull(list);
     }
 
     @Test
     @InSequence(4)
     public void getLists() {
-        fail();
+        Lists lists = mailChimpClient.getLists();
+        assertTrue(lists.getTotalItems() > 0);
     }
 
     @Test
     @InSequence(5)
     public void createListMember() {
-        Member member = new Member("abacus@gmail.com");
+        Member member = new Member(email);
         member.setEmailType(Member.EmailType.html);
         member.setStatus(SubscribeStatus.SUBSCRIBED);
-        member.putMergeField("MERGE0", "abacus@gmail.com");
+        member.putMergeField("EMAIL", email);
         member.putMergeField("MESSAGE", "some message");
         member.setLanguage("nl");
         member.setTimestampSignup(ZonedDateTime.now());
@@ -97,20 +105,21 @@ public class MailChimpClientTest {
     @Test
     @InSequence(6)
     public void getListMember() {
-        Member member = mailChimpClient.getListMember(listID, "059c25e5f277a80495b9512f03d70687");
+        Member member = mailChimpClient.getListMember(listID, "e26cacce30fb2566ba0c8dddc7260948");
         assertNotNull(member);
     }
 
     @Test
     @InSequence(7)
     public void getListMembers() {
-        fail();
+        Members members = mailChimpClient.getListMembers(listID);
+        assertEquals(1l, members.getTotalItems().longValue());
     }
 
     @Test
     @InSequence(8)
     public void updateListMember() {
-        Member member = mailChimpClient.getListMember(listID, "059c25e5f277a80495b9512f03d70687");
+        Member member = mailChimpClient.getListMember(listID, "e26cacce30fb2566ba0c8dddc7260948");
         member.putMergeField("NAME", "test");
         member = mailChimpClient.updateListMember(listID, member.getId(), member);
         assertEquals("test", member.getMergeField("NAME"));
@@ -119,29 +128,13 @@ public class MailChimpClientTest {
     @Test
     @InSequence(9)
     public void removeListMember() {
-        Member member = mailChimpClient.getListMember(listID, "059c25e5f277a80495b9512f03d70687");
+        Member member = mailChimpClient.getListMember(listID, "e26cacce30fb2566ba0c8dddc7260948");
         mailChimpClient.removeListMember(listID, member.getId());
-    }
-
-    @Test
-    @InSequence(10)
-    public void getListMergeFields() {
-        ListMergeFields mergefields = mailChimpClient.getListMergeFields(listID);
-
-        assertNotNull(mergefields);
-        assertEquals(2l, (long) mergefields.getTotalItems());
-        assertEquals("Name", mergefields.getMergeFields().get(0).getName());
-    }
-
-    @Test
-    @InSequence(11)
-    public void createMergeField() {
-        fail();
     }
 
     @Test
     @InSequence(12)
     public void removeList() {
-        fail();
+        mailChimpClient.removeList(listID);
     }
 }

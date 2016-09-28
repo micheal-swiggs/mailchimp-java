@@ -4,6 +4,10 @@ import com.mailchimp.domain.*;
 import feign.Param;
 import feign.RequestLine;
 
+/**
+ * @throws MailChimpErrorException when an error occors with the call (runtimeexception)
+ * @author stevensnoeijen
+ */
 public interface MailChimpClient {
 
     public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
@@ -36,7 +40,7 @@ public interface MailChimpClient {
     Lists getLists();
 
     @RequestLine("GET /3.0/lists/{list-id}")
-    List getListMembers(@Param("list-id") String listId);
+    Members getListMembers(@Param("list-id") String listId);
 
     @RequestLine("GET /3.0/lists/{list-id}/members?offset={offset}&count={count}")
     Members getListMembers(@Param("list-id") String listId, @Param("offset") Integer offset, @Param("count") Integer count);
