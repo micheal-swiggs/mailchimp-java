@@ -8,15 +8,80 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * A MailChimp list is a powerful and flexible tool that helps you manage your contacts.
+ *
+ * @see <a href="http://developer.mailchimp.com/documentation/mailchimp/reference/lists/">http://developer.mailchimp.com/documentation/mailchimp/reference/lists/<a>
  * @author Micheal Swiggs
  * @author stevensnoeijen
  */
 public class List {
 
-    public static enum ListVisibility {
+    public static enum Visibility {
         pub, prv
     }
 
+    public class ListContact {
+
+        /**
+         * The company name for the list.
+         */
+        @Getter
+        @Setter
+        private String company;
+
+        /**
+         * The street address for the list contact.
+         */
+        @Getter
+        @Setter
+        private String address1;
+
+        /**
+         * The street address for the list contact.
+         */
+        @Getter
+        @Setter
+        private String address2;
+
+        /**
+         * The city for the list contact.
+         */
+        @Getter
+        @Setter
+        private String city;
+
+        /**
+         * The state for the list contact.
+         */
+        @Getter
+        @Setter
+        private String state;
+
+        /**
+         * The postal or zip code for the list contact.
+         */
+        @Getter
+        @Setter
+        private String zip;
+
+        /**
+         * A two-character ISO3166 country code. Defaults to US if invalid.
+         */
+        @Getter
+        @Setter
+        private String country;
+
+        /**
+         * The phone number for the list contact.
+         */
+        @Getter
+        @Setter
+        private String phone;
+    }
+
+    /**
+     * A string that uniquely identifies this list.
+     */
     @Getter
     private String id;
 
@@ -24,24 +89,39 @@ public class List {
     @Getter
     private Integer totalItems;
 
+    /**
+     * The name of the list.
+     */
     @Getter
     @Setter
     private String name;
 
+    /**
+     * <a href="http://kb.mailchimp.com/lists/growth/about-the-required-email-footer-content?utm_source=mc-api&amp;utm_medium=docs&amp;utm_campaign=apidocs">Contact information displayed in campaign footers</a> to comply with international spam laws.
+     */
     @JsonProperty("contact")
     @Getter
     private ListContact contact = new ListContact();
 
+    /**
+     * The <a href="http://kb.mailchimp.com/accounts/compliance-tips/edit-the-permission-reminder?utm_source=mc-api&amp;utm_medium=docs&amp;utm_campaign=apidocs">permission reminder</a> for the list.
+     */
     @JsonProperty("permission_reminder")
     @Getter
     @Setter
     private String permissionReminder;
 
+    /**
+     * Whether campaigns for this list use the <a href="http://kb.mailchimp.com/campaigns/archives/about-the-archive-bar?utm_source=mc-api&amp;utm_medium=docs&amp;utm_campaign=apidocs">Archive Bar</a> in archives by default.
+     */
     @JsonProperty("use_archive_bar")
     @Getter
     @Setter
     private Boolean useArchiveBar;
 
+    /**
+     * <a href="http://kb.mailchimp.com/campaigns/design/set-up-email-subject-from-name-and-from-email-address-on-a-campaign?utm_source=mc-api&amp;utm_medium=docs&amp;utm_campaign=apidocs">Default values for campaigns</a> created for this list.
+     */
     @JsonProperty("campaign_defaults")
     @Getter
     private CampaignDefaults campaignDefaults = new CampaignDefaults();
@@ -62,6 +142,9 @@ public class List {
     @Setter
     private String notifyOnUnsubscribe;
 
+    /**
+     * The date and time that this list was created.
+     */
     @JsonProperty("date_created")
     @Getter
     @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
@@ -98,6 +181,9 @@ public class List {
     @Getter
     private String subscribeUrlLong;
 
+    /**
+     * The list’s <a href="http://kb.mailchimp.com/campaigns/ways-to-build/use-email-beamer-to-create-a-campaign?utm_source=mc-api&amp;utm_medium=docs&amp;utm_campaign=apidocs">Email Beamer</a> address.
+     */
     @JsonProperty("beamer_address")
     @Getter
     private String beamerAddress;
@@ -107,7 +193,7 @@ public class List {
      */
     @Getter
     @Setter
-    private ListVisibility visibility;
+    private Visibility visibility;
 
     /**
      * Any list-specific modules installed for this list.
@@ -115,6 +201,9 @@ public class List {
     @Getter
     private java.util.List<String> modules;
 
+    /**
+     * Stats for the list. Many of these are cached for at least five minutes.
+     */
     @Getter
     private ListStats stats;
 }

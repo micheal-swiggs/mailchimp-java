@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mailchimp;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -24,7 +20,8 @@ public class InSequenceRunner extends BlockJUnit4ClassRunner {
 
     @Override
     protected List computeTestMethods() {
-        List<FrameworkMethod> tests = super.computeTestMethods();
+        //super returns an unmodified list and need to be copied to able be sorted
+        List<FrameworkMethod> tests = new ArrayList<>(super.computeTestMethods());
         Collections.sort(tests, (FrameworkMethod o1, FrameworkMethod o2) -> {
             //if both are InSequence sort
             if (o1.getAnnotation(InSequence.class) != null

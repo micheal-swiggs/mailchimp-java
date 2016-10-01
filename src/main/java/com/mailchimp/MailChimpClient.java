@@ -12,8 +12,13 @@ public interface MailChimpClient {
 
     public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
+    /**
+     * API Root
+     *
+     * @return
+     */
     @RequestLine("GET /3.0/")
-    Account getAccount();
+    Root getRoot();
 
     @RequestLine("GET /3.0/lists/{list-id}/members/{subscriber-hash}")
     Member getListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
@@ -27,6 +32,12 @@ public interface MailChimpClient {
     @RequestLine("DELETE /3.0/lists/{list-id}/members/{subscriber-hash}")
     void removeListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
 
+    /**
+     * Create a new list in your MailChimp account.
+     *
+     * @param list
+     * @return created list
+     */
     @RequestLine("POST /3.0/lists")
     List createList(List list);
 
