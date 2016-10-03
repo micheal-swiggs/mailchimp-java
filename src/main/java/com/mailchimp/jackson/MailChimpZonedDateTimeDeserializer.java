@@ -16,6 +16,9 @@ public final class MailChimpZonedDateTimeDeserializer extends JsonDeserializer<Z
     @Override
     public ZonedDateTime deserialize(final JsonParser parser, final DeserializationContext context) throws IOException, JsonProcessingException {
         final String stringDate = parser.getText();
+        if (stringDate == null || stringDate.isEmpty()) {
+            return null;
+        }
         ZonedDateTime date = ZonedDateTime.parse(stringDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         return date;
     }

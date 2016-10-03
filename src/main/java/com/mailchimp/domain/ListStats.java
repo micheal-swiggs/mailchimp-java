@@ -17,7 +17,7 @@ import lombok.Getter;
  * @author Micheal Swiggs
  * @author stevensnoeijen
  */
-class ListStats {
+public class ListStats {
 
     /**
      * The number of active members in the list.

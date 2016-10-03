@@ -15,7 +15,11 @@ public final class MailChimpZonedDateTimeSerializer extends JsonSerializer<Zoned
 
     @Override
     public void serialize(final ZonedDateTime value, final JsonGenerator gen, final SerializerProvider arg2) throws IOException, JsonProcessingException {
-        String stringValue = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(value);
-        gen.writeString(stringValue);
+        if (value == null) {
+            gen.writeString("");
+        } else {
+            String stringValue = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(value);
+            gen.writeString(stringValue);
+        }
     }
 }
