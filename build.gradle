@@ -19,7 +19,9 @@ dependencies {
 
     compile("org.projectlombok:lombok:1.16.4")
     compile('com.netflix.feign:feign-core:8.18.0')
+    compile('com.fasterxml.jackson.core:jackson-databind:2.8.3')
     compile('commons-codec:commons-codec:1.10')
+
     testCompile('junit:junit:4.11')
 }
 
