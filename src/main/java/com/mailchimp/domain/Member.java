@@ -1,6 +1,7 @@
 package com.mailchimp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -18,6 +19,7 @@ import org.apache.commons.codec.binary.Hex;
  * @author Ed Bras
  * @author stevensnoeijen
  */
+@JsonIgnoreProperties(ignoreUnknown = true)//TODO: remove this when all properties are add
 public class Member {
 
     public static enum EmailType {
@@ -75,19 +77,17 @@ public class Member {
     @Setter
     private Map<String, String> mergeFields = new HashMap<>();
 
-    @JsonProperty
-    @Getter
-    @Setter
-    private Map<String, Boolean> interests = new HashMap<>();
-
+//    @JsonProperty
+//    @Getter
+//    @Setter
+//    private Map<String, Boolean> interests = new HashMap<>();
     //@JsonProperty
     //@Getter
     //@JsonIgnore
     //private SubscriberStats stats = new SubscriberStats();
-    @JsonProperty("ip_signup")
-    @Getter
-    private String ipSignup;
-
+//    @JsonProperty("ip_signup")
+//    @Getter
+//    private String ipSignup;
     @JsonProperty("timestamp_signup")
     @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
     @JsonSerialize(using = MailChimpZonedDateTimeSerializer.class)
@@ -95,12 +95,12 @@ public class Member {
     @Setter
     private ZonedDateTime timestampSignup;
 
-    @JsonProperty("ip_opt")
-    @Getter
-    private String ipOpt;
-
+//    @JsonProperty("ip_opt")
+//    @Getter
+//    private String ipOpt;
     @JsonProperty("timestamp_opt")
     @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = MailChimpZonedDateTimeSerializer.class)//TODO: dont post/put this
     @Getter
     private ZonedDateTime timestampOpt;
 
@@ -130,11 +130,10 @@ public class Member {
     @Setter
     private String emailClient;
 
-    @JsonProperty
-    @Getter
-    @Setter
-    private Location location;
-
+//    @JsonProperty
+//    @Getter
+//    @Setter
+//    private Location location;
     /**
      * When creating a subscriber that already exists this status will be used.
      */
@@ -167,9 +166,14 @@ public class Member {
 
     @JsonIgnore
     public String getSubscriberHash() {
+        return getSubscriberHash(emailAddress);
+    }
+
+    @JsonIgnore
+    public static String getSubscriberHash(String email) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            return Hex.encodeHexString(md.digest(emailAddress.toLowerCase().getBytes("UTF-8")));
+            return Hex.encodeHexString(md.digest(email.toLowerCase().getBytes("UTF-8")));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

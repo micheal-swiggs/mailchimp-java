@@ -24,7 +24,7 @@ public class MailChimpClientTest {
 
     private final MailChimpClient mailChimpClient;
     private final String email;
-    private String listID;
+    private static String listID;
 
     public MailChimpClientTest() throws IOException {
         Properties properties = new Properties();
@@ -599,14 +599,16 @@ public class MailChimpClientTest {
 
     @Test
     @InSequence(6)
-    public void getListMember() {
-        Member member = mailChimpClient.getListMember(listID, "e26cacce30fb2566ba0c8dddc7260948");
+    public void getListMember() throws InterruptedException {
+        Thread.sleep(1000);//wait a sec
+        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
         assertNotNull(member);
     }
 
     @Test
     @InSequence(7)
-    public void getListMembers() {
+    public void getListMembers() throws InterruptedException {
+        Thread.sleep(1000);//wait a sec
         Members members = mailChimpClient.getListMembers(listID);
         assertEquals(1l, members.getTotalItems().longValue());
     }
@@ -614,16 +616,16 @@ public class MailChimpClientTest {
     @Test
     @InSequence(8)
     public void updateListMember() {
-        Member member = mailChimpClient.getListMember(listID, "e26cacce30fb2566ba0c8dddc7260948");
-        member.putMergeField("NAME", "test");
+        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
+        member.putMergeField("FNAME", "test");
         member = mailChimpClient.updateListMember(listID, member.getId(), member);
-        assertEquals("test", member.getMergeField("NAME"));
+        assertEquals("test", member.getMergeField("FNAME"));
     }
 
     @Test
     @InSequence(9)
     public void removeListMember() {
-        Member member = mailChimpClient.getListMember(listID, "e26cacce30fb2566ba0c8dddc7260948");
+        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
         mailChimpClient.removeListMember(listID, member.getId());
     }
 
