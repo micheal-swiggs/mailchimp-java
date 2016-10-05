@@ -43,6 +43,12 @@ public class MailChimpClientTest {
     }
 
     @Test
+    public void decode404() {
+        List list = mailChimpClient.getList("123");
+        assertNull(list);
+    }
+
+    @Test
     @InSequence(1)
     public void getRoot() {
         Root account = mailChimpClient.getRoot();

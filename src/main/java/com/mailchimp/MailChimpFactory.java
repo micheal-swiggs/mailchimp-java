@@ -17,6 +17,7 @@ public class MailChimpFactory {
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
                 .errorDecoder(new MailChimpErrorDecoder())
+                .decode404()
                 .requestInterceptor(new BasicAuthRequestInterceptor("anyString", apiKey))
                 .target(MailChimpClient.class, mailChimpApi(apiBase));
         return mailChimp;
@@ -27,6 +28,7 @@ public class MailChimpFactory {
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
                 .errorDecoder(new MailChimpErrorDecoder())
+                .decode404()
                 .requestInterceptor(new OAuthRequestInterceptor(accessToken))
                 .target(MailChimpClient.class, mailChimpApi(apiBase));
         return mailChimp;
