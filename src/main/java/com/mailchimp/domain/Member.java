@@ -56,6 +56,7 @@ public class Member {
      */
     @JsonProperty(value = "email_address", required = true)
     @Getter
+    @Setter
     protected String emailAddress;
 
     @JsonProperty("unique_email_id")
