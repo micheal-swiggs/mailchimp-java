@@ -2,9 +2,9 @@ package com.mailchimp;
 
 import com.mailchimp.auth.OAuthRequestInterceptor;
 import com.mailchimp.jackson.JacksonDecoder;
+import com.mailchimp.jackson.JacksonEncoder;
 import feign.Feign;
 import feign.auth.BasicAuthRequestInterceptor;
-import feign.jackson.JacksonEncoder;
 
 public class MailChimpFactory {
 
