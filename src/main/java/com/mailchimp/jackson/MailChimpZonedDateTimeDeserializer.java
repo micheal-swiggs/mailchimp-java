@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * @author stevensnoeijen
@@ -19,8 +20,14 @@ public final class MailChimpZonedDateTimeDeserializer extends JsonDeserializer<Z
         if (stringDate == null || stringDate.isEmpty()) {
             return null;
         }
-        ZonedDateTime date = ZonedDateTime.parse(stringDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        return date;
+        try {
+            ZonedDateTime date = ZonedDateTime.parse(stringDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            return date;
+        } catch (DateTimeParseException ex) {
+            //when format is incorrect set to null
+            return null;
+        }
+
     }
 
 }
