@@ -26,6 +26,8 @@ public final class JsonConstants {
 
     public static final String LAST_CHANGED = "last_changed";
 
+    public static final String LISTS = "lists";
+
     public static final String LIST_ID = "list_id";
 
     public static final String COUNTRY_CODE = "country_code";
