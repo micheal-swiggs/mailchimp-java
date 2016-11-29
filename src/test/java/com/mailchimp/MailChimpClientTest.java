@@ -53,7 +53,7 @@ public class MailChimpClientTest {
 
     @Test
     public void decode404() {
-        List list = mailChimpClient.getList("123");
+        SubscriberList list = mailChimpClient.getList("123");
         assertNull(list);
     }
 
@@ -561,7 +561,7 @@ public class MailChimpClientTest {
     @Test
     @InSequence(2)
     public void createList() {
-        List list = new List();
+        SubscriberList list = new SubscriberList();
         list.setName("mailchimp-test");
         list.getContact().setCompany("MailChimp test");
         list.getContact().setAddress1("1386 Andy Street");
@@ -584,14 +584,14 @@ public class MailChimpClientTest {
     @Test
     @InSequence(3)
     public void getList() {
-        List list = mailChimpClient.getList(listID);
+        SubscriberList list = mailChimpClient.getList(listID);
         assertNotNull(list);
     }
 
     @Test
     @InSequence(4)
     public void getLists() {
-        Lists lists = mailChimpClient.getLists();
+        SubscriberLists lists = mailChimpClient.getLists();
         assertTrue(lists.getTotalItems() > 0);
     }
 

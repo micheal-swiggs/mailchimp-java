@@ -14,7 +14,7 @@ import lombok.Setter;
  * @author Micheal Swiggs
  * @author stevensnoeijen
  */
-public class List {
+public class SubscriberList {
 
     public static enum Visibility {
         pub, prv

@@ -39,16 +39,16 @@ public interface MailChimpClient {
      * @return created list
      */
     @RequestLine("POST /3.0/lists")
-    List createList(List list);
+    SubscriberList createList(SubscriberList list);
 
     @RequestLine("DELETE /3.0/lists/{list-id}")
     void removeList(@Param("list-id") String listId);
 
     @RequestLine("GET /3.0/lists/{list-id}")
-    List getList(@Param("list-id") String listId);
+    SubscriberList getList(@Param("list-id") String listId);
 
     @RequestLine("GET /3.0/lists")
-    Lists getLists();
+    SubscriberLists getLists();
 
     @RequestLine("GET /3.0/lists/{list-id}/members")
     Members getListMembers(@Param("list-id") String listId);

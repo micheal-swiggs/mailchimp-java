@@ -5,10 +5,10 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class Lists {
+public class SubscriberLists {
 
     @JsonProperty("lists")
-    private List<com.mailchimp.domain.List> lists;
+    private List<SubscriberList> lists;
 
     @JsonProperty("total_items")
     private Integer totalItems;

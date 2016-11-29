@@ -71,7 +71,7 @@ public class Member {
     @JsonProperty("status")
     @Getter
     @Setter
-    protected SubscribeStatus status;
+    private SubscribeStatus status;
 
     @JsonProperty("merge_fields")
     @Getter
@@ -138,10 +138,11 @@ public class Member {
     /**
      * When creating a subscriber that already exists this status will be used.
      */
-    /* @JsonProperty("status_if_new")
-     * @Getter
-     * @Setter
-     * private SubscribeStatus statusIfNew; */
+    @JsonProperty("status_if_new")
+    @Getter
+    @Setter
+    private SubscribeStatus statusIfNew;
+
     @JsonProperty("list_id")
     @Getter
     private String listId;
