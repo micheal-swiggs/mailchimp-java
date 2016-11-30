@@ -8,3 +8,5 @@ build/
 .settings/
 bin/
 /gradle/wrapper/gradle-wrapper.properties
+/.nb-gradle/
+test.properties
