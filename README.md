@@ -8,14 +8,10 @@ This is a Java wrapper around the MailChimp API. Checkout `Example.groovy` for a
 
 ## Maven / Gradle
 
-This library can be included as a JitPack dependency, e.g using gradle:
-
-    repositories {
-        maven { url "https://jitpack.io" }
-    }
+This library can be included from Maven, e.g using gradle:
 
     dependencies {
-        compile 'com.github.micheal-swiggs:mailchimp-java:v0.5.2'
+        compile 'com.github.micheal-swiggs:mailchimp-java:0.5.2'
     }
 
 
