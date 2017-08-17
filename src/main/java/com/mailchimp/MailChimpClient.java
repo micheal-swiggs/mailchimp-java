@@ -76,4 +76,10 @@ public interface MailChimpClient {
 
     @RequestLine("DELETE /3.0/batches/{batch-id}")
     void removeBatch(@Param("batch-id") String batchId);
+
+    @RequestLine("GET /3.0/search-members?query={query}")
+    SearchMembers searchMembers(@Param("query") String query);
+
+    @RequestLine("GET /3.0/search-members?query={query}&list_id={listId}")
+    SearchMembers searchMembers(@Param("query") String query, @Param("listId") String listId);
 }

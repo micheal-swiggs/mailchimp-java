@@ -638,7 +638,7 @@ public class MailChimpClientTest {
     }
 
     @Test
-    @InSequence(9)
+    @InSequence(11)
     public void removeListMember() {
         Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
         mailChimpClient.removeListMember(listID, member.getId());
@@ -969,13 +969,23 @@ public class MailChimpClientTest {
      * @Test
      * public void searchCampaigns() {
      * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void searchMembers() {
-     * fail("Not yet implemented");
-     * }
-     *
+     * } */
+    @Test
+    @InSequence(9)
+    public void searchMembers() throws InterruptedException {
+        Thread.sleep(1000);//wait a sec
+        SearchMembers searchMembers = mailChimpClient.searchMembers(email);
+        assertEquals(3l, searchMembers.getExactMatches().getTotalItems().longValue());
+    }
+
+    @Test
+    @InSequence(10)
+    public void searchMembersByListId() throws InterruptedException {
+        Thread.sleep(1000);//wait a sec
+        SearchMembers searchMembers = mailChimpClient.searchMembers(email, listID);
+        assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
+    }
+    /*
      * @Test
      * public void createTemplateFolder() {
      * fail("Not yet implemented");
