@@ -14,4 +14,20 @@ public class SearchMembers {
 
     @JsonProperty("full_search")
     private FullSearch fullSearch;
+
+    public ExactMatches getExactMatches() {
+        return exactMatches;
+    }
+
+    public void setExactMatches(ExactMatches exactMatches) {
+        this.exactMatches = exactMatches;
+    }
+
+    public FullSearch getFullSearch() {
+        return fullSearch;
+    }
+
+    public void setFullSearch(FullSearch fullSearch) {
+        this.fullSearch = fullSearch;
+    }
 }

@@ -5,15 +5,27 @@
  */
 package com.mailchimp;
 
-import com.mailchimp.domain.*;
+import com.mailchimp.domain.Member;
+import com.mailchimp.domain.MemberStatus;
+import com.mailchimp.domain.Members;
+import com.mailchimp.domain.Root;
+import com.mailchimp.domain.SearchMembers;
+import com.mailchimp.domain.SubscribeStatus;
+import com.mailchimp.domain.SubscriberList;
+import com.mailchimp.domain.SubscriberLists;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.Properties;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Requires "test.properties" file in projects root to run the tests. <br>
@@ -25,7 +37,7 @@ import static org.junit.Assert.*;
  * </ul>
  * Do know that if you do not have a paid account that you maybe reach your request limit.
  *
- * @author stevensnoeijen
+ * @author stevensnoeijen, eamoralesl
  */
 @RunWith(InSequenceRunner.class)
 public class MailChimpClientTest {
@@ -46,9 +58,9 @@ public class MailChimpClientTest {
         mailChimpClient = MailChimpFactory.createWithBasicAuth(apiKey, apiBase);
     }
 
-    @Test(expected = MailChimpErrorException.class)
     public void throwMailChimpErrorException() throws MailChimpErrorException {
-        mailChimpClient.getList("123");
+        SubscriberList list = mailChimpClient.getList("123");
+        Assert.assertNull(list);
     }
 
     @Test
@@ -597,11 +609,48 @@ public class MailChimpClientTest {
 
     @Test
     @InSequence(5)
-    public void createListMember() {
+    public void createListMemberSubscribed() {
         Member member = new Member(email);
         member.setEmailType(Member.EmailType.html);
         member.setStatus(SubscribeStatus.SUBSCRIBED);
         member.putMergeField("EMAIL", email);
+        member.putMergeField("MESSAGE", "some message");
+        member.setLanguage("nl");
+        member.setTimestampSignup(ZonedDateTime.now());
+
+        //test create
+        member = mailChimpClient.createListMember(listID, member);
+        assertNotNull(member.getId());
+        assertNotNull(member.getUniqueEmailId());
+    }
+
+    @Test
+    @InSequence(5)
+    public void createListMemberUnSubscribed() {
+        String emailAddress = email.replace("@", "+10@");
+        Member member = new Member(emailAddress);
+        member.setEmailType(Member.EmailType.html);
+        member.setStatus(SubscribeStatus.UNSUBSCRIBED);
+        member.putMergeField("EMAIL", emailAddress);
+        member.putMergeField("MESSAGE", "some message");
+        member.setLanguage("nl");
+        member.setTimestampSignup(ZonedDateTime.now());
+
+        //test create
+        member = mailChimpClient.createListMember(listID, member);
+        assertNotNull(member.getId());
+        assertNotNull(member.getUniqueEmailId());
+    }
+
+
+    @Test
+    @InSequence(5)
+    public void createListMemberCleaned() {
+        String emailAddress = email.replace("@", "+20@");
+        Member member = new Member(emailAddress);
+        member.setEmailType(Member.EmailType.html);
+        member.setStatus(SubscribeStatus.CLEANED);
+        member.putMergeField("EMAIL", emailAddress);
         member.putMergeField("MESSAGE", "some message");
         member.setLanguage("nl");
         member.setTimestampSignup(ZonedDateTime.now());
@@ -625,7 +674,20 @@ public class MailChimpClientTest {
     public void getListMembers() throws InterruptedException {
         Thread.sleep(1000);//wait a sec
         Members members = mailChimpClient.getListMembers(listID);
-        assertEquals(1l, members.getTotalItems().longValue());
+        assertEquals(3, members.getTotalItems().longValue());
+    }
+
+
+    @Test
+    @InSequence(7)
+    public void getListMembersByStatus() throws InterruptedException {
+        Thread.sleep(1000);//wait a sec
+        Members subscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, MemberStatus.subscribed);
+        assertEquals(1, subscribed.getTotalItems().longValue());
+        Members unSubscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, MemberStatus.unsubscribed);
+        assertEquals(1, unSubscribed.getTotalItems().longValue());
+        Members cleaned = mailChimpClient.getListMembersByStatus(listID, 0, 1, MemberStatus.cleaned);
+        assertEquals(1, cleaned.getTotalItems().longValue());
     }
 
     @Test
@@ -975,14 +1037,16 @@ public class MailChimpClientTest {
     public void searchMembers() throws InterruptedException {
         Thread.sleep(1000);//wait a sec
         SearchMembers searchMembers = mailChimpClient.searchMembers(email);
-        assertEquals(3l, searchMembers.getExactMatches().getTotalItems().longValue());
+        assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
     }
+
 
     @Test
     @InSequence(10)
     public void searchMembersByListId() throws InterruptedException {
         Thread.sleep(1000);//wait a sec
         SearchMembers searchMembers = mailChimpClient.searchMembers(email, listID);
+        //The expected value here is 1 because it only returns subscribed members
         assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
     }
     /*
