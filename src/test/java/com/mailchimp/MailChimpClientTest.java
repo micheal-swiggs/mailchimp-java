@@ -6,7 +6,6 @@
 package com.mailchimp;
 
 import com.mailchimp.domain.Member;
-import com.mailchimp.domain.MemberStatus;
 import com.mailchimp.domain.Members;
 import com.mailchimp.domain.Root;
 import com.mailchimp.domain.SearchMembers;
@@ -662,6 +661,24 @@ public class MailChimpClientTest {
     }
 
     @Test
+    @InSequence(5)
+    public void createListMemberPending() {
+        String emailAddress = email.replace("@", "+30@");
+        Member member = new Member(emailAddress);
+        member.setEmailType(Member.EmailType.html);
+        member.setStatus(SubscribeStatus.PENDING);
+        member.putMergeField("EMAIL", emailAddress);
+        member.putMergeField("MESSAGE", "some message");
+        member.setLanguage("nl");
+        member.setTimestampSignup(ZonedDateTime.now());
+
+        //test create
+        member = mailChimpClient.createListMember(listID, member);
+        assertNotNull(member.getId());
+        assertNotNull(member.getUniqueEmailId());
+    }
+
+    @Test
     @InSequence(6)
     public void getListMember() throws InterruptedException {
         Thread.sleep(1000);//wait a sec
@@ -674,7 +691,7 @@ public class MailChimpClientTest {
     public void getListMembers() throws InterruptedException {
         Thread.sleep(1000);//wait a sec
         Members members = mailChimpClient.getListMembers(listID);
-        assertEquals(3, members.getTotalItems().longValue());
+        assertEquals(4, members.getTotalItems().longValue());
     }
 
 
@@ -682,12 +699,14 @@ public class MailChimpClientTest {
     @InSequence(7)
     public void getListMembersByStatus() throws InterruptedException {
         Thread.sleep(1000);//wait a sec
-        Members subscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, MemberStatus.subscribed);
+        Members subscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.SUBSCRIBED);
         assertEquals(1, subscribed.getTotalItems().longValue());
-        Members unSubscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, MemberStatus.unsubscribed);
+        Members unSubscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.UNSUBSCRIBED);
         assertEquals(1, unSubscribed.getTotalItems().longValue());
-        Members cleaned = mailChimpClient.getListMembersByStatus(listID, 0, 1, MemberStatus.cleaned);
+        Members cleaned = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.CLEANED);
         assertEquals(1, cleaned.getTotalItems().longValue());
+        Members pending = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.PENDING);
+        assertEquals(1, pending.getTotalItems().longValue());
     }
 
     @Test
