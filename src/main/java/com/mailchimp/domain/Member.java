@@ -18,6 +18,7 @@ import org.apache.commons.codec.binary.Hex;
 /**
  * @author Ed Bras
  * @author stevensnoeijen
+ * @author eamoralesl
  */
 @JsonIgnoreProperties(ignoreUnknown = true)//TODO: remove this when all properties are add
 public class Member {
@@ -179,5 +180,133 @@ public class Member {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String getMergefieldFname() {
+        return MERGEFIELD_FNAME;
+    }
+
+    public static String getMergefieldLname() {
+        return MERGEFIELD_LNAME;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
+    public String getUniqueEmailId() {
+        return uniqueEmailId;
+    }
+
+    public void setUniqueEmailId(String uniqueEmailId) {
+        this.uniqueEmailId = uniqueEmailId;
+    }
+
+    public EmailType getEmailType() {
+        return emailType;
+    }
+
+    public void setEmailType(EmailType emailType) {
+        this.emailType = emailType;
+    }
+
+    public SubscribeStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(SubscribeStatus status) {
+        this.status = status;
+    }
+
+    public Map<String, String> getMergeFields() {
+        return mergeFields;
+    }
+
+    public void setMergeFields(Map<String, String> mergeFields) {
+        this.mergeFields = mergeFields;
+    }
+
+    public ZonedDateTime getTimestampSignup() {
+        return timestampSignup;
+    }
+
+    public void setTimestampSignup(ZonedDateTime timestampSignup) {
+        this.timestampSignup = timestampSignup;
+    }
+
+    public ZonedDateTime getTimestampOpt() {
+        return timestampOpt;
+    }
+
+    public void setTimestampOpt(ZonedDateTime timestampOpt) {
+        this.timestampOpt = timestampOpt;
+    }
+
+    public Integer getMemberRating() {
+        return memberRating;
+    }
+
+    public void setMemberRating(Integer memberRating) {
+        this.memberRating = memberRating;
+    }
+
+    public ZonedDateTime getLastChanged() {
+        return lastChanged;
+    }
+
+    public void setLastChanged(ZonedDateTime lastChanged) {
+        this.lastChanged = lastChanged;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public boolean isVip() {
+        return vip;
+    }
+
+    public void setVip(boolean vip) {
+        this.vip = vip;
+    }
+
+    public String getEmailClient() {
+        return emailClient;
+    }
+
+    public void setEmailClient(String emailClient) {
+        this.emailClient = emailClient;
+    }
+
+    public SubscribeStatus getStatusIfNew() {
+        return statusIfNew;
+    }
+
+    public void setStatusIfNew(SubscribeStatus statusIfNew) {
+        this.statusIfNew = statusIfNew;
+    }
+
+    public String getListId() {
+        return listId;
+    }
+
+    public void setListId(String listId) {
+        this.listId = listId;
     }
 }

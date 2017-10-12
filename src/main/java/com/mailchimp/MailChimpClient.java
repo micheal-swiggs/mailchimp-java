@@ -1,12 +1,23 @@
 package com.mailchimp;
 
-import com.mailchimp.domain.*;
+import com.mailchimp.domain.Batch;
+import com.mailchimp.domain.CreateBatch;
+import com.mailchimp.domain.ListMergeField;
+import com.mailchimp.domain.ListMergeFields;
+import com.mailchimp.domain.Member;
+import com.mailchimp.domain.Members;
+import com.mailchimp.domain.Root;
+import com.mailchimp.domain.SearchMembers;
+import com.mailchimp.domain.StatusToLower;
+import com.mailchimp.domain.SubscribeStatus;
+import com.mailchimp.domain.SubscriberList;
+import com.mailchimp.domain.SubscriberLists;
 import feign.Param;
 import feign.RequestLine;
 
 /**
  * @throws MailChimpErrorException when an error occors with the call (runtimeexception)
- * @author stevensnoeijen
+ * @author stevensnoeijen, eamoralesl
  */
 public interface MailChimpClient {
 
@@ -55,6 +66,9 @@ public interface MailChimpClient {
 
     @RequestLine("GET /3.0/lists/{list-id}/members?offset={offset}&count={count}")
     Members getListMembers(@Param("list-id") String listId, @Param("offset") Integer offset, @Param("count") Integer count);
+
+    @RequestLine("GET /3.0/lists/{list-id}/members?offset={offset}&count={count}&status={status}")
+    Members getListMembersByStatus(@Param("list-id") String listId, @Param("offset") Integer offset, @Param("count") Integer count, @Param(value = "status", expander = StatusToLower.class) SubscribeStatus status);
 
     @RequestLine("GET /3.0/lists/{list-id}/merge-fields")
     ListMergeFields getListMergeFields(@Param("list-id") String listId);
