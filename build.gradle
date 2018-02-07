@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = "com.mailchimp"
-version = "0.4.3"
+version = "0.5.3"
 
 compileJava {
     sourceCompatibility = 1.8
@@ -22,7 +22,7 @@ dependencies {
     compile('com.fasterxml.jackson.core:jackson-databind:2.8.3')
     compile('commons-codec:commons-codec:1.10')
 
-    testCompile('junit:junit:4.11')
+    testCompile('junit:junit:4.12')
 }
 
 install {
