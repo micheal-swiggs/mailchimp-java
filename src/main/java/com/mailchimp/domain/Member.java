@@ -149,8 +149,6 @@ public class Member {
     private String listId;
 
     @JsonProperty("interests")
-    @Getter
-    @Setter
     private Map<String,Boolean> interests = new HashMap<>();
 
     public Member() {
