@@ -148,6 +148,9 @@ public class Member {
     @Getter
     private String listId;
 
+    @JsonProperty("interests")
+    private Map<String,Boolean> interests = new HashMap<>();
+
     public Member() {
     }
 
@@ -309,4 +312,20 @@ public class Member {
     public void setListId(String listId) {
         this.listId = listId;
     }
+
+    public Map<String, Boolean> getInterests() {
+        return interests;
+    }
+
+    public void setInterests(Map<String, Boolean> interests) {
+        if (interests == null) {
+            throw new IllegalArgumentException("interests muust not be null");
+        }
+        this.interests = interests;
+    }
+
+    public void putInterest(String name, Boolean value) {
+        interests.put(name, value);
+    }
+
 }
