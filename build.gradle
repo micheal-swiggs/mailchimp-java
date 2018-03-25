@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = "com.mailchimp"
-version = "0.5.3"
+version = "0.5.4"
 
 compileJava {
     sourceCompatibility = 1.8
