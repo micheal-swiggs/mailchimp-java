@@ -16,7 +16,6 @@ import feign.Param;
 import feign.RequestLine;
 
 /**
- * @throws MailChimpErrorException when an error occors with the call (runtimeexception)
  * @author stevensnoeijen, eamoralesl
  */
 public interface MailChimpClient {

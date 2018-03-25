@@ -12,7 +12,7 @@ import lombok.Setter;
 /**
  * A MailChimp list is a powerful and flexible tool that helps you manage your contacts.
  *
- * @see <a href="http://developer.mailchimp.com/documentation/mailchimp/reference/lists/">http://developer.mailchimp.com/documentation/mailchimp/reference/lists/<a>
+ * @see <a href="http://developer.mailchimp.com/documentation/mailchimp/reference/lists/">http://developer.mailchimp.com/documentation/mailchimp/reference/lists/</a>
  * @author Micheal Swiggs
  * @author stevensnoeijen
  */
