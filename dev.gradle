@@ -5,7 +5,7 @@ apply plugin: 'application'
 
 sourceSets.main.java.srcDirs = []
 sourceSets.main.groovy.srcDirs += ["src/main/java"]
-sourceSets.main.groovy.srcDirs += ["."]
+sourceSets.main.groovy.srcDirs += ["example"]
 
 mainClassName = "com.mailchimp.Example"
 
