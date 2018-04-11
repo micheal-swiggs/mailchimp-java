@@ -3,7 +3,7 @@ package com.mailchimp.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mailchimp.jackson.MailChimpZonedDateTimeDeserializer;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import lombok.Data;
 
 @Data
@@ -26,11 +26,11 @@ public class Batch {
 
     @JsonProperty("submitted_at")
     @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
-    private Date submittedAt;
+    private ZonedDateTime submittedAt;
 
     @JsonProperty("completed_at")
     @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
-    private Date completedAt;
+    private ZonedDateTime completedAt;
 
     @JsonProperty("response_body_url")
     private String responseBodyUrl;
