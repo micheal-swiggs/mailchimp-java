@@ -8,6 +8,11 @@ import com.mailchimp.domain.Member;
 import com.mailchimp.domain.Members;
 import com.mailchimp.domain.Root;
 import com.mailchimp.domain.SearchMembers;
+import com.mailchimp.domain.Segment;
+import com.mailchimp.domain.SegmentCreate;
+import com.mailchimp.domain.SegmentModified;
+import com.mailchimp.domain.SegmentModify;
+import com.mailchimp.domain.Segments;
 import com.mailchimp.domain.StatusToLower;
 import com.mailchimp.domain.SubscribeStatus;
 import com.mailchimp.domain.SubscriberList;
@@ -80,6 +85,21 @@ public interface MailChimpClient {
 
     @RequestLine("DELETE /lists/{list-id}/merge-fields/{merge-id}")
     void removeListMergeField(@Param("list-id") String listId, @Param("merge-id") String mergeId);
+
+    @RequestLine("POST /3.0/lists/{list-id}/segments")
+    Segment createSegment(@Param("list-id") String listId, SegmentCreate request);
+
+    @RequestLine("POST /3.0/lists/{list-id}/segments/{segment-id}")
+    SegmentModified modifySegment(@Param("list-id") String listId, @Param("segment-id") Integer segmentId, SegmentModify request);
+
+    @RequestLine("GET /3.0/lists/{list-id}/segments")
+    Segments getSegments(@Param("list-id") String listId);
+
+    @RequestLine("GET /3.0/lists/{list-id}/segments/{segment-id}")
+    Segment getSegment(@Param("list-id") String listId, @Param("segment-id") Integer segmentId);
+
+    @RequestLine("DELETE /3.0/lists/{list-id}/segments/{segment-id}")
+    void removeSegment(@Param("list-id") String listId, @Param("segment-id") Integer segmentId);
 
     @RequestLine("POST /3.0/batches")
     Batch createBatch(CreateBatch batch);
