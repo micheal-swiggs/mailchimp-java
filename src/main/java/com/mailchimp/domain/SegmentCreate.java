@@ -16,19 +16,4 @@ public class SegmentCreate {
     @JsonProperty("static_segment")
     private List<String> staticSegment = new ArrayList<>();
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<String> getStaticSegment() {
-        return staticSegment;
-    }
-
-    public void setStaticSegment(List<String> staticSegment) {
-        this.staticSegment = staticSegment;
-    }
 }
