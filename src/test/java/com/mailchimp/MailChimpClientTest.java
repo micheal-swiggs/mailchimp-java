@@ -9,6 +9,11 @@ import com.mailchimp.domain.Member;
 import com.mailchimp.domain.Members;
 import com.mailchimp.domain.Root;
 import com.mailchimp.domain.SearchMembers;
+import com.mailchimp.domain.Segment;
+import com.mailchimp.domain.SegmentCreate;
+import com.mailchimp.domain.SegmentModified;
+import com.mailchimp.domain.SegmentModify;
+import com.mailchimp.domain.Segments;
 import com.mailchimp.domain.SubscribeStatus;
 import com.mailchimp.domain.SubscriberList;
 import com.mailchimp.domain.SubscriberLists;
@@ -19,6 +24,8 @@ import org.junit.runner.RunWith;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -41,9 +48,10 @@ import static org.junit.Assert.assertTrue;
 @RunWith(InSequenceRunner.class)
 public class MailChimpClientTest {
 
+    private static String listID;
+    private static Integer segmentID;
     private final MailChimpClient mailChimpClient;
     private final String email;
-    private static String listID;
 
     public MailChimpClientTest() throws IOException {
         //load properties
@@ -718,18 +726,6 @@ public class MailChimpClientTest {
         assertEquals("test", member.getMergeField("FNAME"));
     }
 
-    @Test
-    @InSequence(11)
-    public void removeListMember() {
-        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
-        mailChimpClient.removeListMember(listID, member.getId());
-    }
-
-    @Test
-    @InSequence(12)
-    public void removeList() {
-        mailChimpClient.removeList(listID);
-    }
 
     /*
      * @Test
@@ -1067,6 +1063,88 @@ public class MailChimpClientTest {
         SearchMembers searchMembers = mailChimpClient.searchMembers(email, listID);
         //The expected value here is 1 because it only returns subscribed members
         assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
+    }
+
+
+    @Test
+    @InSequence(11)
+    public void createListSegment() throws InterruptedException {
+        Thread.sleep(1000);//wait a sec
+        SegmentCreate request = new SegmentCreate();
+        request.setName("Test segment");
+        final Segment segment = mailChimpClient.createSegment(listID, request);
+        assertNotNull(segment.getId());
+        segmentID = segment.getId();
+    }
+
+    @Test
+    @InSequence(12)
+    public void getListSegments() throws InterruptedException {
+        Thread.sleep(1000);//wait a sec
+        final Segments segments = mailChimpClient.getSegments(listID);
+        assertEquals(1, segments.getSegments().size());
+    }
+
+    @Test
+    @InSequence(13)
+    public void getListSegment() throws InterruptedException {
+        Thread.sleep(1000);
+        final Segment segment = mailChimpClient.getSegment(listID, segmentID);
+        assertEquals(segmentID, segment.getId());
+    }
+
+    @Test
+    @InSequence(14)
+    public void updateListSegmentAdd() throws InterruptedException {
+        Thread.sleep(1000);
+        SegmentModify request = new SegmentModify();
+        request.setMembersToAdd(Arrays.asList(email, "test." + email));
+        final SegmentModified segment = mailChimpClient.modifySegment(listID, segmentID, request);
+        assertNotNull(segment);
+        assertEquals(1, (int) segment.getTotalAdded());
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    @InSequence(15)
+    public void updateListSegmentError() throws InterruptedException {
+        Thread.sleep(1000);
+        SegmentModify request = new SegmentModify();
+        request.setMembersToRemove(Arrays.asList("test." + email, "dummy@server.com"));
+        mailChimpClient.modifySegment(listID, segmentID, request);
+    }
+
+    @Test
+    @InSequence(16)
+    public void updateListSegmentRemove() throws InterruptedException {
+        Thread.sleep(1000);
+        SegmentModify request = new SegmentModify();
+        request.setMembersToRemove(Collections.singletonList(email));
+        final SegmentModified segment = mailChimpClient.modifySegment(listID, segmentID, request);
+        assertNotNull(segment);
+        assertEquals(1, (int) segment.getTotalRemoved());
+    }
+
+    @Test
+    @InSequence(17)
+    public void removeListSegment() throws InterruptedException {
+        Thread.sleep(1000);
+        mailChimpClient.removeSegment(listID, segmentID);
+
+        final Segments segments = mailChimpClient.getSegments(listID);
+        assertEquals(0, segments.getSegments().size());
+    }
+
+    @Test
+    @InSequence(18)
+    public void removeListMember() {
+        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
+        mailChimpClient.removeListMember(listID, member.getId());
+    }
+
+    @Test
+    @InSequence(19)
+    public void removeList() {
+        mailChimpClient.removeList(listID);
     }
     /*
      * @Test
