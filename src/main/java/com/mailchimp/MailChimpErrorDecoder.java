@@ -12,19 +12,14 @@ import feign.RetryableException;
 import feign.codec.ErrorDecoder;
 
 import java.io.IOException;
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.TemporalUnit;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 
 import static feign.Util.RETRY_AFTER;
-import static feign.Util.checkNotNull;
 import static java.util.Locale.US;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -51,7 +46,7 @@ public class MailChimpErrorDecoder implements ErrorDecoder {
                 return new RuntimeException("json serialization of mailchimp error", ex);
             }
         } else if (response.status() == 503) { // 503: Service (temporary) unavailable
-            java.util.Date retryAfter = new RetryAfterDecoder().apply(firstOrNull(response.headers(), RETRY_AFTER));
+            Date retryAfter = new RetryAfterDecoder().apply(firstOrNull(response.headers(), RETRY_AFTER));
             return new RetryableException(response.reason(), retryAfter);
         } else {
             return new ErrorDecoder.Default().decode(methodKey, response);
