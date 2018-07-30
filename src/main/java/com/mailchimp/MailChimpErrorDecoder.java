@@ -10,6 +10,7 @@ import com.mailchimp.domain.MailChimpError;
 import feign.Response;
 import feign.RetryableException;
 import feign.codec.ErrorDecoder;
+import lombok.NonNull;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -69,8 +70,8 @@ public class MailChimpErrorDecoder implements ErrorDecoder {
             this(RFC822_FORMAT);
         }
 
-        RetryAfterDecoder(DateFormat rfc822Format) {
-            this.rfc822Format = checkNotNull(rfc822Format, "rfc822Format");
+        RetryAfterDecoder(@NonNull DateFormat rfc822Format) {
+            this.rfc822Format = rfc822Format;
         }
 
         protected long currentTimeMillis() {
