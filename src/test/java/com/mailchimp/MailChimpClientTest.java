@@ -5,18 +5,7 @@
  */
 package com.mailchimp;
 
-import com.mailchimp.domain.Member;
-import com.mailchimp.domain.Members;
-import com.mailchimp.domain.Root;
-import com.mailchimp.domain.SearchMembers;
-import com.mailchimp.domain.Segment;
-import com.mailchimp.domain.SegmentCreate;
-import com.mailchimp.domain.SegmentModified;
-import com.mailchimp.domain.SegmentModify;
-import com.mailchimp.domain.Segments;
-import com.mailchimp.domain.SubscribeStatus;
-import com.mailchimp.domain.SubscriberList;
-import com.mailchimp.domain.SubscriberLists;
+import com.mailchimp.domain.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1136,13 +1125,50 @@ public class MailChimpClientTest {
 
     @Test
     @InSequence(18)
+    public void addMemberTag() throws InterruptedException {
+        Thread.sleep(1000);
+        Tags testTags = new Tags();
+        Tag testTag = new Tag();
+        testTag.setName("Test Tag");
+        testTag.setStatus(Tag.TagStatus.active);
+        testTags.getTags().add(testTag);
+        String hash = Member.getSubscriberHash(email);
+
+        mailChimpClient.modifyListMemberTags(listID, hash, testTags);
+        Tags response = mailChimpClient.getListMemberTags(listID, hash);
+
+        assertNotNull(response);
+        assertEquals(1, response.getTags().size());
+        assertEquals("Test Tag", response.getTags().get(0).getName());
+    }
+
+    @Test
+    @InSequence(19)
+    public void removeMemberTag() throws InterruptedException {
+        Thread.sleep(1000);
+        Tags testTags = new Tags();
+        Tag testTag = new Tag();
+        testTag.setName("Test Tag");
+        testTag.setStatus(Tag.TagStatus.inactive);
+        testTags.getTags().add(testTag);
+        String hash = Member.getSubscriberHash(email);
+
+        mailChimpClient.modifyListMemberTags(listID, hash, testTags);
+        Tags response = mailChimpClient.getListMemberTags(listID, hash);
+
+        assertNotNull(response);
+        assertTrue(response.getTags().isEmpty());
+    }
+
+    @Test
+    @InSequence(20)
     public void removeListMember() {
         Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
         mailChimpClient.removeListMember(listID, member.getId());
     }
 
     @Test
-    @InSequence(19)
+    @InSequence(21)
     public void removeList() {
         mailChimpClient.removeList(listID);
     }

@@ -17,6 +17,7 @@ import com.mailchimp.domain.StatusToLower;
 import com.mailchimp.domain.SubscribeStatus;
 import com.mailchimp.domain.SubscriberList;
 import com.mailchimp.domain.SubscriberLists;
+import com.mailchimp.domain.Tags;
 import feign.Param;
 import feign.RequestLine;
 
@@ -46,6 +47,12 @@ public interface MailChimpClient {
 
     @RequestLine("DELETE /3.0/lists/{list-id}/members/{subscriber-hash}")
     void removeListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
+
+    @RequestLine("POST /3.0/lists/{list-id}/members/{subscriber-hash}/tags")
+    void modifyListMemberTags(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash, Tags tags);
+
+    @RequestLine("GET /3.0/lists/{list-id}/members/{subscriber-hash}/tags")
+    Tags getListMemberTags(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
 
     /**
      * Create a new list in your MailChimp account.
