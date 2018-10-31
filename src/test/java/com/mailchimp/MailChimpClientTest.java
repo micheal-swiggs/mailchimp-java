@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -48,6 +49,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(InSequenceRunner.class)
 public class MailChimpClientTest {
 
+    private static final String propertiesFile = "test.properties";
+
     private static String listID;
     private static Integer segmentID;
     private final MailChimpClient mailChimpClient;
@@ -55,11 +58,14 @@ public class MailChimpClientTest {
 
     public MailChimpClientTest() throws IOException {
         //load properties
-        Properties properties = new Properties();
-        properties.load(new FileInputStream("test.properties"));
 
-        String apiKey = properties.getProperty("apiKey");
-        String apiBase = properties.getProperty("apiBase");
+        String apiKey, apiBase;
+
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(propertiesFile));
+
+        apiKey = properties.getProperty("apiKey");
+        apiBase = properties.getProperty("apiBase");
         email = properties.getProperty("email");
 
         mailChimpClient = MailChimpFactory.createWithBasicAuth(apiKey, apiBase);
@@ -623,7 +629,7 @@ public class MailChimpClientTest {
         member.putMergeField("EMAIL", email);
         member.putMergeField("MESSAGE", "some message");
         member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
+        //member.setTimestampSignup(ZonedDateTime.now());
 
         //test create
         member = mailChimpClient.createListMember(listID, member);
@@ -641,7 +647,7 @@ public class MailChimpClientTest {
         member.putMergeField("EMAIL", emailAddress);
         member.putMergeField("MESSAGE", "some message");
         member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
+        //member.setTimestampSignup(ZonedDateTime.now().plusDays(1));
 
         //test create
         member = mailChimpClient.createListMember(listID, member);
@@ -660,7 +666,7 @@ public class MailChimpClientTest {
         member.putMergeField("EMAIL", emailAddress);
         member.putMergeField("MESSAGE", "some message");
         member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
+        //member.setTimestampSignup(ZonedDateTime.now());
 
         //test create
         member = mailChimpClient.createListMember(listID, member);
@@ -678,7 +684,7 @@ public class MailChimpClientTest {
         member.putMergeField("EMAIL", emailAddress);
         member.putMergeField("MESSAGE", "some message");
         member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
+        //member.setTimestampSignup(ZonedDateTime.now());
 
         //test create
         member = mailChimpClient.createListMember(listID, member);

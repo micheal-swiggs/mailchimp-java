@@ -1,0 +1,13 @@
+language: java
+install: true
+
+jdk:
+  - oraclejdk8
+
+script:
+  - touch test.properties
+  - echo "apiKey=$API_KEY" >> test.properties
+  - echo "apiBase=$API_BASE" >> test.properties
+  - echo "email=$TEST_EMAIL" >> test.properties
+  - cat test.properties
+  - ./gradlew --info check
