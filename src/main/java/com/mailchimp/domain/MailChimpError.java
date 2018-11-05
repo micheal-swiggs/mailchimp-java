@@ -16,6 +16,7 @@ import lombok.ToString;
 @ToString
 public class MailChimpError {
 
+    @ToString
     public static class BodyError {
 
         @JsonProperty
