@@ -1,22 +1,6 @@
 package com.mailchimp;
 
-import com.mailchimp.domain.Batch;
-import com.mailchimp.domain.CreateBatch;
-import com.mailchimp.domain.ListMergeField;
-import com.mailchimp.domain.ListMergeFields;
-import com.mailchimp.domain.Member;
-import com.mailchimp.domain.Members;
-import com.mailchimp.domain.Root;
-import com.mailchimp.domain.SearchMembers;
-import com.mailchimp.domain.Segment;
-import com.mailchimp.domain.SegmentCreate;
-import com.mailchimp.domain.SegmentModified;
-import com.mailchimp.domain.SegmentModify;
-import com.mailchimp.domain.Segments;
-import com.mailchimp.domain.StatusToLower;
-import com.mailchimp.domain.SubscribeStatus;
-import com.mailchimp.domain.SubscriberList;
-import com.mailchimp.domain.SubscriberLists;
+import com.mailchimp.domain.*;
 import feign.Param;
 import feign.RequestLine;
 
@@ -25,7 +9,7 @@ import feign.RequestLine;
  */
 public interface MailChimpClient {
 
-    public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
+    public static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     /**
      * API Root
@@ -51,6 +35,7 @@ public interface MailChimpClient {
      * Create a new list in your MailChimp account.
      *
      * @param list
+     *
      * @return created list
      */
     @RequestLine("POST /3.0/lists")
