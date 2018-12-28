@@ -23,6 +23,7 @@ dependencies {
     compile('commons-codec:commons-codec:1.10')
 
     testCompile('junit:junit:4.12')
+    testCompile group: 'io.github.openfeign', name: 'feign-mock', version: '10.1.0'
 }
 
 install {

@@ -1,37 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mailchimp;
 
-import com.mailchimp.domain.Member;
-import com.mailchimp.domain.Members;
 import com.mailchimp.domain.Root;
-import com.mailchimp.domain.SearchMembers;
-import com.mailchimp.domain.Segment;
-import com.mailchimp.domain.SegmentCreate;
-import com.mailchimp.domain.SegmentModified;
-import com.mailchimp.domain.SegmentModify;
-import com.mailchimp.domain.Segments;
-import com.mailchimp.domain.SubscribeStatus;
 import com.mailchimp.domain.SubscriberList;
-import com.mailchimp.domain.SubscriberLists;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.io.FileInputStream;
+import com.mailchimp.jackson.JacksonDecoder;
+import com.mailchimp.jackson.JacksonEncoder;
+import feign.Feign;
+import feign.mock.HttpMethod;
+import feign.mock.MockClient;
+import feign.mock.MockTarget;
 import java.io.IOException;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Properties;
+import java.io.InputStream;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Requires "test.properties" file in projects root to run the tests. <br>
@@ -45,41 +29,45 @@ import static org.junit.Assert.assertTrue;
  *
  * @author stevensnoeijen, eamoralesl
  */
-@RunWith(InSequenceRunner.class)
 public class MailChimpClientTest {
 
-    private static String listID;
-    private static Integer segmentID;
-    private final MailChimpClient mailChimpClient;
-    private final String email;
+    private MailChimpClient mailChimpClient;
+    private MockClient mockClient;
 
-    public MailChimpClientTest() throws IOException {
-        //load properties
-        Properties properties = new Properties();
-        properties.load(new FileInputStream("test.properties"));
-
-        String apiKey = properties.getProperty("apiKey");
-        String apiBase = properties.getProperty("apiBase");
-        email = properties.getProperty("email");
-
-        mailChimpClient = MailChimpFactory.createWithBasicAuth(apiKey, apiBase);
+    public static InputStream getResponseResourceAsStream(String name) {
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream("responses/" + name);
     }
 
-    public void throwMailChimpErrorException() throws MailChimpErrorException {
-        SubscriberList list = mailChimpClient.getList("123");
-        Assert.assertNull(list);
+    @Before
+    public void setup() throws IOException {
+        mockClient = new MockClient()
+                .add(HttpMethod.GET, "/3.0/lists/nonExistingList", 404)
+                .add(HttpMethod.GET, "/3.0/", 200, getResponseResourceAsStream("root.txt"));
+
+        mailChimpClient = Feign.builder()
+                .decoder(new JacksonDecoder())
+                .encoder(new JacksonEncoder())
+                .errorDecoder(new MailChimpErrorDecoder())
+                .decode404()
+                .client(mockClient)
+                .target(new MockTarget<>(MailChimpClient.class));
+    }
+
+    @After
+    public void tearDown() {
+        mockClient.verifyStatus();
     }
 
     @Test
-    public void decode404() {
-        SubscriberList list = mailChimpClient.getList("123");
+    public void getList_nonExistingList_isNull() {
+        SubscriberList list = mailChimpClient.getList("nonExistingList");
         assertNull(list);
     }
 
     @Test
-    @InSequence(1)
     public void getRoot() {
-        Root account = mailChimpClient.getRoot();
+        Root root = mailChimpClient.getRoot();
+        assertEquals("8d3a3db4d97663a9074efcc16", root.getAccountId());
     }
 
     /*
@@ -577,154 +565,154 @@ public class MailChimpClientTest {
      * public void removeFolder() {
      * fail("Not yet implemented");
      * } */
-    @Test
-    @InSequence(2)
-    public void createList() {
-        SubscriberList list = new SubscriberList();
-        list.setName("mailchimp-test");
-        list.getContact().setCompany("MailChimp test");
-        list.getContact().setAddress1("1386 Andy Street");
-        list.getContact().setCity("Springfield");
-        list.getContact().setState("South Dakota");
-        list.getContact().setZip("57062");
-        list.getContact().setCountry("US");
-        list.setPermissionReminder("MailChimp test");
-        list.getCampaignDefaults().setFromName("MailChimp test");
-        list.getCampaignDefaults().setFromEmail(email);
-        list.getCampaignDefaults().setSubject("");
-        list.getCampaignDefaults().setLanguage("en");
-        list.setEmailTypeOption(false);
-
-        list = mailChimpClient.createList(list);
-        assertNotNull(list);
-        listID = list.getId();
-    }
-
-    @Test
-    @InSequence(3)
-    public void getList() {
-        SubscriberList list = mailChimpClient.getList(listID);
-        assertNotNull(list);
-    }
-
-    @Test
-    @InSequence(4)
-    public void getLists() {
-        SubscriberLists lists = mailChimpClient.getLists();
-        assertTrue(lists.getTotalItems() > 0);
-    }
-
-    @Test
-    @InSequence(5)
-    public void createListMemberSubscribed() {
-        Member member = new Member(email);
-        member.setEmailType(Member.EmailType.html);
-        member.setStatus(SubscribeStatus.SUBSCRIBED);
-        member.putMergeField("EMAIL", email);
-        member.putMergeField("MESSAGE", "some message");
-        member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
-
-        //test create
-        member = mailChimpClient.createListMember(listID, member);
-        assertNotNull(member.getId());
-        assertNotNull(member.getUniqueEmailId());
-    }
-
-    @Test
-    @InSequence(5)
-    public void createListMemberUnSubscribed() {
-        String emailAddress = email.replace("@", "+10@");
-        Member member = new Member(emailAddress);
-        member.setEmailType(Member.EmailType.html);
-        member.setStatus(SubscribeStatus.UNSUBSCRIBED);
-        member.putMergeField("EMAIL", emailAddress);
-        member.putMergeField("MESSAGE", "some message");
-        member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
-
-        //test create
-        member = mailChimpClient.createListMember(listID, member);
-        assertNotNull(member.getId());
-        assertNotNull(member.getUniqueEmailId());
-    }
-
-
-    @Test
-    @InSequence(5)
-    public void createListMemberCleaned() {
-        String emailAddress = email.replace("@", "+20@");
-        Member member = new Member(emailAddress);
-        member.setEmailType(Member.EmailType.html);
-        member.setStatus(SubscribeStatus.CLEANED);
-        member.putMergeField("EMAIL", emailAddress);
-        member.putMergeField("MESSAGE", "some message");
-        member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
-
-        //test create
-        member = mailChimpClient.createListMember(listID, member);
-        assertNotNull(member.getId());
-        assertNotNull(member.getUniqueEmailId());
-    }
-
-    @Test
-    @InSequence(5)
-    public void createListMemberPending() {
-        String emailAddress = email.replace("@", "+30@");
-        Member member = new Member(emailAddress);
-        member.setEmailType(Member.EmailType.html);
-        member.setStatus(SubscribeStatus.PENDING);
-        member.putMergeField("EMAIL", emailAddress);
-        member.putMergeField("MESSAGE", "some message");
-        member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
-
-        //test create
-        member = mailChimpClient.createListMember(listID, member);
-        assertNotNull(member.getId());
-        assertNotNull(member.getUniqueEmailId());
-    }
-
-    @Test
-    @InSequence(6)
-    public void getListMember() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
-        assertNotNull(member);
-    }
-
-    @Test
-    @InSequence(7)
-    public void getListMembers() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        Members members = mailChimpClient.getListMembers(listID);
-        assertEquals(4, members.getTotalItems().longValue());
-    }
-
-
-    @Test
-    @InSequence(7)
-    public void getListMembersByStatus() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        Members subscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.SUBSCRIBED);
-        assertEquals(1, subscribed.getTotalItems().longValue());
-        Members unSubscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.UNSUBSCRIBED);
-        assertEquals(1, unSubscribed.getTotalItems().longValue());
-        Members cleaned = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.CLEANED);
-        assertEquals(1, cleaned.getTotalItems().longValue());
-        Members pending = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.PENDING);
-        assertEquals(1, pending.getTotalItems().longValue());
-    }
-
-    @Test
-    @InSequence(8)
-    public void updateListMember() {
-        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
-        member.putMergeField("FNAME", "test");
-        member = mailChimpClient.updateListMember(listID, member.getId(), member);
-        assertEquals("test", member.getMergeField("FNAME"));
-    }
+//    @Test
+//    @InSequence(2)
+//    public void createList() {
+//        SubscriberList list = new SubscriberList();
+//        list.setName("mailchimp-test");
+//        list.getContact().setCompany("MailChimp test");
+//        list.getContact().setAddress1("1386 Andy Street");
+//        list.getContact().setCity("Springfield");
+//        list.getContact().setState("South Dakota");
+//        list.getContact().setZip("57062");
+//        list.getContact().setCountry("US");
+//        list.setPermissionReminder("MailChimp test");
+//        list.getCampaignDefaults().setFromName("MailChimp test");
+//        list.getCampaignDefaults().setFromEmail(email);
+//        list.getCampaignDefaults().setSubject("");
+//        list.getCampaignDefaults().setLanguage("en");
+//        list.setEmailTypeOption(false);
+//
+//        list = mailChimpClient.createList(list);
+//        assertNotNull(list);
+//        listID = list.getId();
+//    }
+//
+//    @Test
+//    @InSequence(3)
+//    public void getList() {
+//        SubscriberList list = mailChimpClient.getList(listID);
+//        assertNotNull(list);
+//    }
+//
+//    @Test
+//    @InSequence(4)
+//    public void getLists() {
+//        SubscriberLists lists = mailChimpClient.getLists();
+//        assertTrue(lists.getTotalItems() > 0);
+//    }
+//
+//    @Test
+//    @InSequence(5)
+//    public void createListMemberSubscribed() {
+//        Member member = new Member(email);
+//        member.setEmailType(Member.EmailType.html);
+//        member.setStatus(SubscribeStatus.SUBSCRIBED);
+//        member.putMergeField("EMAIL", email);
+//        member.putMergeField("MESSAGE", "some message");
+//        member.setLanguage("nl");
+//        member.setTimestampSignup(ZonedDateTime.now());
+//
+//        //test create
+//        member = mailChimpClient.createListMember(listID, member);
+//        assertNotNull(member.getId());
+//        assertNotNull(member.getUniqueEmailId());
+//    }
+//
+//    @Test
+//    @InSequence(5)
+//    public void createListMemberUnSubscribed() {
+//        String emailAddress = email.replace("@", "+10@");
+//        Member member = new Member(emailAddress);
+//        member.setEmailType(Member.EmailType.html);
+//        member.setStatus(SubscribeStatus.UNSUBSCRIBED);
+//        member.putMergeField("EMAIL", emailAddress);
+//        member.putMergeField("MESSAGE", "some message");
+//        member.setLanguage("nl");
+//        member.setTimestampSignup(ZonedDateTime.now());
+//
+//        //test create
+//        member = mailChimpClient.createListMember(listID, member);
+//        assertNotNull(member.getId());
+//        assertNotNull(member.getUniqueEmailId());
+//    }
+//
+//
+//    @Test
+//    @InSequence(5)
+//    public void createListMemberCleaned() {
+//        String emailAddress = email.replace("@", "+20@");
+//        Member member = new Member(emailAddress);
+//        member.setEmailType(Member.EmailType.html);
+//        member.setStatus(SubscribeStatus.CLEANED);
+//        member.putMergeField("EMAIL", emailAddress);
+//        member.putMergeField("MESSAGE", "some message");
+//        member.setLanguage("nl");
+//        member.setTimestampSignup(ZonedDateTime.now());
+//
+//        //test create
+//        member = mailChimpClient.createListMember(listID, member);
+//        assertNotNull(member.getId());
+//        assertNotNull(member.getUniqueEmailId());
+//    }
+//
+//    @Test
+//    @InSequence(5)
+//    public void createListMemberPending() {
+//        String emailAddress = email.replace("@", "+30@");
+//        Member member = new Member(emailAddress);
+//        member.setEmailType(Member.EmailType.html);
+//        member.setStatus(SubscribeStatus.PENDING);
+//        member.putMergeField("EMAIL", emailAddress);
+//        member.putMergeField("MESSAGE", "some message");
+//        member.setLanguage("nl");
+//        member.setTimestampSignup(ZonedDateTime.now());
+//
+//        //test create
+//        member = mailChimpClient.createListMember(listID, member);
+//        assertNotNull(member.getId());
+//        assertNotNull(member.getUniqueEmailId());
+//    }
+//
+//    @Test
+//    @InSequence(6)
+//    public void getListMember() throws InterruptedException {
+//        Thread.sleep(1000);//wait a sec
+//        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
+//        assertNotNull(member);
+//    }
+//
+//    @Test
+//    @InSequence(7)
+//    public void getListMembers() throws InterruptedException {
+//        Thread.sleep(1000);//wait a sec
+//        Members members = mailChimpClient.getListMembers(listID);
+//        assertEquals(4, members.getTotalItems().longValue());
+//    }
+//
+//
+//    @Test
+//    @InSequence(7)
+//    public void getListMembersByStatus() throws InterruptedException {
+//        Thread.sleep(1000);//wait a sec
+//        Members subscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.SUBSCRIBED);
+//        assertEquals(1, subscribed.getTotalItems().longValue());
+//        Members unSubscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.UNSUBSCRIBED);
+//        assertEquals(1, unSubscribed.getTotalItems().longValue());
+//        Members cleaned = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.CLEANED);
+//        assertEquals(1, cleaned.getTotalItems().longValue());
+//        Members pending = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.PENDING);
+//        assertEquals(1, pending.getTotalItems().longValue());
+//    }
+//
+//    @Test
+//    @InSequence(8)
+//    public void updateListMember() {
+//        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
+//        member.putMergeField("FNAME", "test");
+//        member = mailChimpClient.updateListMember(listID, member.getId(), member);
+//        assertEquals("test", member.getMergeField("FNAME"));
+//    }
 
 
     /*
@@ -1047,105 +1035,105 @@ public class MailChimpClientTest {
      * public void searchCampaigns() {
      * fail("Not yet implemented");
      * } */
-    @Test
-    @InSequence(9)
-    public void searchMembers() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        SearchMembers searchMembers = mailChimpClient.searchMembers(email);
-        assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
-    }
-
-
-    @Test
-    @InSequence(10)
-    public void searchMembersByListId() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        SearchMembers searchMembers = mailChimpClient.searchMembers(email, listID);
-        //The expected value here is 1 because it only returns subscribed members
-        assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
-    }
-
-
-    @Test
-    @InSequence(11)
-    public void createListSegment() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        SegmentCreate request = new SegmentCreate();
-        request.setName("Test segment");
-        final Segment segment = mailChimpClient.createSegment(listID, request);
-        assertNotNull(segment.getId());
-        segmentID = segment.getId();
-    }
-
-    @Test
-    @InSequence(12)
-    public void getListSegments() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        final Segments segments = mailChimpClient.getSegments(listID);
-        assertEquals(1, segments.getSegments().size());
-    }
-
-    @Test
-    @InSequence(13)
-    public void getListSegment() throws InterruptedException {
-        Thread.sleep(1000);
-        final Segment segment = mailChimpClient.getSegment(listID, segmentID);
-        assertEquals(segmentID, segment.getId());
-    }
-
-    @Test
-    @InSequence(14)
-    public void updateListSegmentAdd() throws InterruptedException {
-        Thread.sleep(1000);
-        SegmentModify request = new SegmentModify();
-        request.setMembersToAdd(Arrays.asList(email, "test." + email));
-        final SegmentModified segment = mailChimpClient.modifySegment(listID, segmentID, request);
-        assertNotNull(segment);
-        assertEquals(1, (int) segment.getTotalAdded());
-    }
-
-    @Test(expected = MailChimpErrorException.class)
-    @InSequence(15)
-    public void updateListSegmentError() throws InterruptedException {
-        Thread.sleep(1000);
-        SegmentModify request = new SegmentModify();
-        request.setMembersToRemove(Arrays.asList("test." + email, "dummy@server.com"));
-        mailChimpClient.modifySegment(listID, segmentID, request);
-    }
-
-    @Test
-    @InSequence(16)
-    public void updateListSegmentRemove() throws InterruptedException {
-        Thread.sleep(1000);
-        SegmentModify request = new SegmentModify();
-        request.setMembersToRemove(Collections.singletonList(email));
-        final SegmentModified segment = mailChimpClient.modifySegment(listID, segmentID, request);
-        assertNotNull(segment);
-        assertEquals(1, (int) segment.getTotalRemoved());
-    }
-
-    @Test
-    @InSequence(17)
-    public void removeListSegment() throws InterruptedException {
-        Thread.sleep(1000);
-        mailChimpClient.removeSegment(listID, segmentID);
-
-        final Segments segments = mailChimpClient.getSegments(listID);
-        assertEquals(0, segments.getSegments().size());
-    }
-
-    @Test
-    @InSequence(18)
-    public void removeListMember() {
-        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
-        mailChimpClient.removeListMember(listID, member.getId());
-    }
-
-    @Test
-    @InSequence(19)
-    public void removeList() {
-        mailChimpClient.removeList(listID);
-    }
+//    @Test
+//    @InSequence(9)
+//    public void searchMembers() throws InterruptedException {
+//        Thread.sleep(1000);//wait a sec
+//        SearchMembers searchMembers = mailChimpClient.searchMembers(email);
+//        assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
+//    }
+//
+//
+//    @Test
+//    @InSequence(10)
+//    public void searchMembersByListId() throws InterruptedException {
+//        Thread.sleep(1000);//wait a sec
+//        SearchMembers searchMembers = mailChimpClient.searchMembers(email, listID);
+//        //The expected value here is 1 because it only returns subscribed members
+//        assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
+//    }
+//
+//
+//    @Test
+//    @InSequence(11)
+//    public void createListSegment() throws InterruptedException {
+//        Thread.sleep(1000);//wait a sec
+//        SegmentCreate request = new SegmentCreate();
+//        request.setName("Test segment");
+//        final Segment segment = mailChimpClient.createSegment(listID, request);
+//        assertNotNull(segment.getId());
+//        segmentID = segment.getId();
+//    }
+//
+//    @Test
+//    @InSequence(12)
+//    public void getListSegments() throws InterruptedException {
+//        Thread.sleep(1000);//wait a sec
+//        final Segments segments = mailChimpClient.getSegments(listID);
+//        assertEquals(1, segments.getSegments().size());
+//    }
+//
+//    @Test
+//    @InSequence(13)
+//    public void getListSegment() throws InterruptedException {
+//        Thread.sleep(1000);
+//        final Segment segment = mailChimpClient.getSegment(listID, segmentID);
+//        assertEquals(segmentID, segment.getId());
+//    }
+//
+//    @Test
+//    @InSequence(14)
+//    public void updateListSegmentAdd() throws InterruptedException {
+//        Thread.sleep(1000);
+//        SegmentModify request = new SegmentModify();
+//        request.setMembersToAdd(Arrays.asList(email, "test." + email));
+//        final SegmentModified segment = mailChimpClient.modifySegment(listID, segmentID, request);
+//        assertNotNull(segment);
+//        assertEquals(1, (int) segment.getTotalAdded());
+//    }
+//
+//    @Test(expected = MailChimpErrorException.class)
+//    @InSequence(15)
+//    public void updateListSegmentError() throws InterruptedException {
+//        Thread.sleep(1000);
+//        SegmentModify request = new SegmentModify();
+//        request.setMembersToRemove(Arrays.asList("test." + email, "dummy@server.com"));
+//        mailChimpClient.modifySegment(listID, segmentID, request);
+//    }
+//
+//    @Test
+//    @InSequence(16)
+//    public void updateListSegmentRemove() throws InterruptedException {
+//        Thread.sleep(1000);
+//        SegmentModify request = new SegmentModify();
+//        request.setMembersToRemove(Collections.singletonList(email));
+//        final SegmentModified segment = mailChimpClient.modifySegment(listID, segmentID, request);
+//        assertNotNull(segment);
+//        assertEquals(1, (int) segment.getTotalRemoved());
+//    }
+//
+//    @Test
+//    @InSequence(17)
+//    public void removeListSegment() throws InterruptedException {
+//        Thread.sleep(1000);
+//        mailChimpClient.removeSegment(listID, segmentID);
+//
+//        final Segments segments = mailChimpClient.getSegments(listID);
+//        assertEquals(0, segments.getSegments().size());
+//    }
+//
+//    @Test
+//    @InSequence(18)
+//    public void removeListMember() {
+//        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
+//        mailChimpClient.removeListMember(listID, member.getId());
+//    }
+//
+//    @Test
+//    @InSequence(19)
+//    public void removeList() {
+//        mailChimpClient.removeList(listID);
+//    }
     /*
      * @Test
      * public void createTemplateFolder() {
