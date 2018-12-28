@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
 
-    compile("org.projectlombok:lombok:1.16.4")
+    provided group: 'org.projectlombok', name: 'lombok', version: '1.18.4'
     compile group: 'io.github.openfeign', name: 'feign-core', version: '10.1.0'
     compile('com.fasterxml.jackson.core:jackson-databind:2.8.3')
     compile('commons-codec:commons-codec:1.10')
