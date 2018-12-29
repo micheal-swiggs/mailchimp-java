@@ -103,4 +103,8 @@ public interface MailChimpClient {
 
     @RequestLine("GET /3.0/search-members?query={query}&list_id={listId}")
     SearchMembers searchMembers(@Param("query") String query, @Param("listId") String listId);
+
+    static MailChimpClientBuilder builder(){
+        return new MailChimpClientBuilder();
+    }
 }

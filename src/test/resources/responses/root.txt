@@ -1,3 +1,14 @@
+HTTP/1.1 200 OK
+Server: nginx
+Content-Type: application/json; charset=utf-8
+Content-Length: 2340
+Vary: Accept-Encoding
+X-Request-Id: bca135bf-860c-4614-a07b-a70b062680c0
+Link: <https://api.mailchimp.com/schema/3.0/Root.json>; rel="describedBy"
+Date: Tue, 15 Sep 2015 15:13:50 GMT
+Connection: keep-alive
+
+
 {
   "account_id": "8d3a3db4d97663a9074efcc16",
   "account_name": "Freddie's Jokes",
