@@ -2,6 +2,7 @@ package com.mailchimp;
 
 import com.mailchimp.domain.Root;
 import com.mailchimp.domain.SubscriberList;
+import com.mailchimp.domain.SubscriberLists;
 import feign.Request;
 import feign.Response;
 import feign.mock.HttpMethod;
@@ -11,12 +12,9 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import feign.mock.RequestHeaders;
-import feign.mock.RequestKey;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -28,16 +26,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
- * Requires "test.properties" file in projects root to run the tests. <br>
- * The test.properties file must contain the following values:
- * <ul>
- * <li><b>apiKey</b>. Request on the mailchimp website under account > extras > API keys</li>
- * <li><b>apiBase</b>. Base to send the request to, this is contained in the apiKey after the dash (like "us12")</li>
- * <li><b>email</b>. Use as subscriber. Use a real email-address (preferable your own) because this use may receive some mails.</li>
- * </ul>
- * Do know that if you do not have a paid account that you maybe reach your request limit.
- *
- * @author stevensnoeijen, eamoralesl
+ * Unit tests for {@link MailChimpClient}, uses feign-mock to mock responses.
+ * The responses are saved in the resources/responses folder.
+ * These responses were copied from the mailchimp's documentation site, from the associated method's page his "Example response" block.
  */
 public class MailChimpClientTest {
 
@@ -50,7 +41,7 @@ public class MailChimpClientTest {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream("responses/" + name);
     }
 
-    private static Response generateMockRequestByResource(String resourceName)
+    private static Response.Builder generateMockResponseByResource(String resourceName)
         throws IOException {
         InputStream is = getResponseResourceAsStream(resourceName);
         String responseString = IOUtils.toString(is);
@@ -76,25 +67,22 @@ public class MailChimpClientTest {
         //body
         String bodyString = responseString.substring(split+3);
 
-        //create a empty request
-        Request request = Request.create(Request.HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/", Collections.emptyMap(), Request.Body.empty());
-
         //create response
-        Response response = Response.builder()
-                .request(request)
+        Response.Builder responseBuilder = Response.builder()
                 .status(statusCode)
                 .headers(headers)
-                .body(bodyString, Charset.defaultCharset())
-                .build();
-        return response;
+                .body(bodyString, Charset.defaultCharset());
+        return responseBuilder;
     }
 
     @Before
     public void setup() throws IOException {
         mockClient = new MockClient()
-                //root
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/", generateMockRequestByResource("root.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/nonExistingList", 404);
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/", generateMockResponseByResource("root.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/nonExistingList", 404)
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172", generateMockResponseByResource("lists/57afe96172.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("lists_offset-1.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=2&count=1", generateMockResponseByResource("lists_offset-2.txt"));
 
         mailChimpClient = MailChimpClient.builder()
                 .withClient(mockClient)
@@ -108,17 +96,10 @@ public class MailChimpClientTest {
         mockClient.verifyStatus();
     }
 
-
     @Test
     public void builder_default_returnsBuilder(){
         MailChimpClientBuilder builder = MailChimpClient.builder();
         assertNotNull(builder);
-    }
-
-    @Test
-    public void getList_nonExistingList_isNull() {
-        SubscriberList list = mailChimpClient.getList("nonExistingList");
-        assertNull(list);
     }
 
     @Test
@@ -127,28 +108,68 @@ public class MailChimpClientTest {
         assertEquals("8d3a3db4d97663a9074efcc16", root.getAccountId());
     }
 
-    //TODO tests:
-    //getListMember
-    //updateListMember
-    //removeListMember
-    //createList (SubscriberList)
-    //removeList (SubscriberList)
-    //getList (SubscriberList)
-    //getLists (SubscriberList)
-    //getListMembers
-    //getListMembersByStatus
-    //getListMergeFields
-    //createMergeField
-    //removeListMergeField
-    //createSegment
-    //modifySegment
-    //getSegments
-    //getSegment
-    //removeSegment
-    //createBatch
-    //getBatch
-    //getBatches
-    //removeBatch
-    //removeBatch
-    //searchMembers
+    @Test
+    public void getSubscriberList_nonExistingListId_isNull() {
+        SubscriberList list = mailChimpClient.getSubscriberList("nonExistingList");
+        assertNull(list);
+    }
+
+    @Test
+    public void getSubscriberList_existingListId_oneList(){
+        SubscriberList list = mailChimpClient.getSubscriberList("57afe96172");
+        assertEquals("57afe96172", list.getId());
+    }
+
+    @Test
+    public void getSubscriberLists_offset1AndCount1_filledLists(){
+        SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(1, 1);
+        assertEquals(1, subscriberLists.getTotalItems().intValue());
+        assertEquals("57afe96172", subscriberLists.getLists().get(0).getId());
+    }
+
+    @Test
+    public void getSubscriberLists_nonExistendPage_emptyList(){
+        SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(2, 1);
+        assertEquals(0, subscriberLists.getLists().size());
+    }
+
+    //TODO: createSubscriberList
+    //TODO: removeSubscriberList
+
+    //TODO: getListMember_nonExistingListId_isNull
+    //TODO: getListMember_existingListId_listMember
+    //TODO: updateListMember
+    //TODO: removeListMember
+    //TODO: getListMembers_nonExistingListId_isNull
+    //TODO: getListMembers_firstPage_filledLists
+    //TODO: getListMembersByStatus, combine this into one method
+
+    //TODO: getListMergeFields_nonExistingListId_isNull
+    //TODO: getListMergeFields_existingListId_listMergeFields
+    //TODO: createMergeField
+    //TODO: removeListMergeField
+
+    //TODO: createSegment
+    //TODO: modifySegment
+    //TODO: getSegments_nonExistingListId_isNull
+    //TODO: getSegments_existingListId_segments
+    //TODO: getSegment_nonExistingListId_isNull
+    //TODO: getSegment_existingListIdAndNonExistingSegmentId_isNull
+    //TODO: getSegment_existingListIdAndExistingSegmentId_segment
+    //TODO: removeSegment
+
+    //TODO: createBatch
+    //TODO: getBatch_nonExistingBatchId_isNull
+    //TODO: getBatch_existingBatchId_batch
+    //TODO: getBatches_firstPage_filledBatchList
+    //TODO: getBatches_nonExistingPage_emptyList
+    //TODO: removeBatch
+
+    //TODO: searchMembers_invalidQuery_noResults
+    //TODO: searchMembers_validQuery_results
+    //TODO: searchMembers_validQueryAndInvalidListId_noResults
+    //TODO: searchMembers_validQueryAndValidListId_results
+
+    //TODO: lists responses as Page<T> response with page info
+    //TODO: add method to get next paged response
 }
