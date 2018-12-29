@@ -1,5 +1,9 @@
 package com.mailchimp;
 
+import com.mailchimp.domain.ListMergeField;
+import com.mailchimp.domain.ListMergeFields;
+import com.mailchimp.domain.Member;
+import com.mailchimp.domain.Members;
 import com.mailchimp.domain.Root;
 import com.mailchimp.domain.SubscriberList;
 import com.mailchimp.domain.SubscriberLists;
@@ -79,10 +83,12 @@ public class MailChimpClientTest {
     public void setup() throws IOException {
         mockClient = new MockClient()
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/", generateMockResponseByResource("root.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/nonExistingList", 404)
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172", generateMockResponseByResource("lists/57afe96172.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("lists_offset-1.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=2&count=1", generateMockResponseByResource("lists_offset-2.txt"));
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=2&count=1", generateMockResponseByResource("lists_offset-2.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?offset=0&count=3", generateMockResponseByResource("lists/57afe96172/members.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("lists/57afe96172/merge-fields.txt"));
 
         mailChimpClient = MailChimpClient.builder()
                 .withClient(mockClient)
@@ -136,26 +142,67 @@ public class MailChimpClientTest {
     //TODO: createSubscriberList
     //TODO: removeSubscriberList
 
-    //TODO: getListMember_nonExistingListId_isNull
-    //TODO: getListMember_existingListId_listMember
+    @Test
+    public void  getListMember_existingListIdAndExistingSubscruberHash_listMember(){
+        Member member = mailChimpClient.getListMember("57afe96172", "852aaa9532cb36adfb5e9fef7a4206a9");
+        assertEquals("57afe96172", member.getListId());
+        assertEquals("852aaa9532cb36adfb5e9fef7a4206a9", member.getSubscriberHash());
+    }
+
+    @Test
+    public void  getListMember_nonExistingListId_isNull(){
+        Member member = mailChimpClient.getListMember("nonExistingListId", "852aaa9532cb36adfb5e9fef7a4206a9");
+        assertNull(member);
+    }
+
+    @Test
+    public void  getListMember_existingListIdAndNonExistingSubscruberHash_isNull(){
+        Member member = mailChimpClient.getListMember("57afe96172", "nonExistingSubscriberHash");
+        assertNull(member);
+    }
+
     //TODO: updateListMember
     //TODO: removeListMember
-    //TODO: getListMembers_nonExistingListId_isNull
-    //TODO: getListMembers_firstPage_filledLists
+
+    @Test
+    public void getListMembers_nonExistingListId_isNull(){
+        Members members = mailChimpClient.getListMembers("nonExistingId");
+        assertNull(members);
+    }
+
+    @Test
+    public void getListMembers_firstPage_filledLists(){
+        Members members = mailChimpClient.getListMembers("57afe96172", 0, 3);
+        assertEquals("57afe96172", members.getListId());
+        assertEquals(3, members.getMembers().size());
+    }
+
     //TODO: getListMembersByStatus, combine this into one method
 
-    //TODO: getListMergeFields_nonExistingListId_isNull
-    //TODO: getListMergeFields_existingListId_listMergeFields
+    @Test
+    public void getListMergeFields_nonExistingListId_isNull(){
+        ListMergeFields listMergeFields = mailChimpClient.getListMergeFields("nonExistingListId");
+        assertNull(listMergeFields);
+    }
+
+    @Test
+    public void getListMergeFields_existingListId_listMergeFields(){
+        ListMergeFields listMergeFields = mailChimpClient.getListMergeFields("57afe96172");
+        assertEquals("57afe96172", listMergeFields.getListId());
+        assertEquals(2, listMergeFields.getMergeFields().size());
+    }
+
     //TODO: createMergeField
     //TODO: removeListMergeField
 
-    //TODO: createSegment
-    //TODO: modifySegment
+
     //TODO: getSegments_nonExistingListId_isNull
     //TODO: getSegments_existingListId_segments
     //TODO: getSegment_nonExistingListId_isNull
     //TODO: getSegment_existingListIdAndNonExistingSegmentId_isNull
     //TODO: getSegment_existingListIdAndExistingSegmentId_segment
+    //TODO: createSegment
+    //TODO: modifySegment
     //TODO: removeSegment
 
     //TODO: createBatch

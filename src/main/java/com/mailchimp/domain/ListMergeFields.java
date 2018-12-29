@@ -15,4 +15,7 @@ public class ListMergeFields {
 
     @JsonProperty("merge_fields")
     private List<ListMergeField> mergeFields;
+
+    @JsonProperty("list_id")
+    private String listId;
 }
