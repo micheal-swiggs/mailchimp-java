@@ -82,13 +82,13 @@ public class MailChimpClientTest {
     @Before
     public void setup() throws IOException {
         mockClient = new MockClient()
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/", generateMockResponseByResource("root.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172", generateMockResponseByResource("lists/57afe96172.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("lists_offset-1.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=2&count=1", generateMockResponseByResource("lists_offset-2.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?offset=0&count=3", generateMockResponseByResource("lists/57afe96172/members.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("lists/57afe96172/merge-fields.txt"));
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/", generateMockResponseByResource("3.0/root.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172", generateMockResponseByResource("3.0/lists/57afe96172.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("3.0/lists_offset-1.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=2&count=1", generateMockResponseByResource("3.0/lists_offset-2.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?offset=0&count=3", generateMockResponseByResource("3.0/lists/57afe96172/members.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields.txt"));
 
         mailChimpClient = MailChimpClient.builder()
                 .withClient(mockClient)
