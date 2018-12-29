@@ -90,7 +90,7 @@ public interface MailChimpClient {
     Batch getBatch(@Param("batch-id") String batchId);
 
     @RequestLine("GET /3.0/batches?offset={offset}&count={count}")
-    java.util.List<Batch> getBatches(@Param("offset") Integer offset, @Param("count") Integer count);
+    Batches getBatches(@Param("offset") Integer offset, @Param("count") Integer count);
 
     @RequestLine("DELETE /3.0/batches/{batch-id}")
     void removeBatch(@Param("batch-id") String batchId);

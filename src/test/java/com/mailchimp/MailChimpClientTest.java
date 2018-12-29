@@ -1,6 +1,7 @@
 package com.mailchimp;
 
-import com.mailchimp.domain.ListMergeField;
+import com.mailchimp.domain.Batch;
+import com.mailchimp.domain.Batches;
 import com.mailchimp.domain.ListMergeFields;
 import com.mailchimp.domain.Member;
 import com.mailchimp.domain.Members;
@@ -9,7 +10,6 @@ import com.mailchimp.domain.Segment;
 import com.mailchimp.domain.Segments;
 import com.mailchimp.domain.SubscriberList;
 import com.mailchimp.domain.SubscriberLists;
-import feign.Request;
 import feign.Response;
 import feign.mock.HttpMethod;
 import feign.mock.MockClient;
@@ -86,13 +86,16 @@ public class MailChimpClientTest {
         mockClient = new MockClient()
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/", generateMockResponseByResource("3.0/root.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172", generateMockResponseByResource("3.0/lists/57afe96172.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("3.0/lists_offset-1.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=2&count=1", generateMockResponseByResource("3.0/lists_offset-2.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=0&count=1", generateMockResponseByResource("3.0/lists?offset=0&count=1.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("3.0/lists?offset=1&count=1.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?offset=0&count=3", generateMockResponseByResource("3.0/lists/57afe96172/members.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381.txt"));
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches/8b2428d747", generateMockResponseByResource("3.0/batches/8b2428d747.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches?offset=0&count=1", generateMockResponseByResource("3.0/batches?offset=0&count=1.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches?offset=1&count=1", generateMockResponseByResource("3.0/batches?offset=1&count=1.txt"));
 
         mailChimpClient = MailChimpClient.builder()
                 .withClient(mockClient)
@@ -131,15 +134,15 @@ public class MailChimpClientTest {
     }
 
     @Test
-    public void getSubscriberLists_offset1AndCount1_filledLists(){
-        SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(1, 1);
+    public void getSubscriberLists_offset0AndCount1_filledLists(){
+        SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(0, 1);
         assertEquals(1, subscriberLists.getTotalItems().intValue());
         assertEquals("57afe96172", subscriberLists.getLists().get(0).getId());
     }
 
     @Test
-    public void getSubscriberLists_nonExistendPage_emptyList(){
-        SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(2, 1);
+    public void getSubscriberList_offset1AndCount1_emptyList(){
+        SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(1, 1);
         assertEquals(0, subscriberLists.getLists().size());
     }
 
@@ -235,10 +238,30 @@ public class MailChimpClientTest {
     //TODO: modifySegment
     //TODO: removeSegment
 
-    //TODO: getBatch_nonExistingBatchId_isNull
-    //TODO: getBatch_existingBatchId_batch
-    //TODO: getBatches_firstPage_filledBatchList
-    //TODO: getBatches_nonExistingPage_emptyList
+    @Test
+    public void getBatch_nonExistingBatchId_isNull(){
+        Batch batch = mailChimpClient.getBatch("nonExistingBatchId");
+        assertNull(batch);
+    }
+
+    @Test
+    public void getBatch_existingBatchId_batch(){
+        Batch batch = mailChimpClient.getBatch("8b2428d747");
+        assertEquals("8b2428d747", batch.getId());
+    }
+
+    @Test
+    public void getBatches_Offset0_filledBatchList(){
+        Batches batches = mailChimpClient.getBatches(0, 1);
+        assertEquals(1, batches.getBatches().size());
+    }
+
+    @Test
+    public void getBatches_nonExistingPage_emptyList(){
+        Batches batches = mailChimpClient.getBatches(1, 1);
+        assertEquals(0, batches.getBatches().size());
+    }
+
     //TODO: createBatch
     //TODO: removeBatch
 

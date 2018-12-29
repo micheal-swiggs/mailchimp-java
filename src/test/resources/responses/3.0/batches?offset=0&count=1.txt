@@ -1,0 +1,62 @@
+HTTP/1.1 200 OK
+Server: nginx
+Date: Thu, 12 May 2016 17:44:33 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 1397
+Connection: keep-alive
+Vary: Accept-Encoding
+X-Request-Id: 146919f6-6ae4-401f-953c-a316eb9d3fd5
+Link: <https://api.mailchimp.com/schema/3.0/Batches/Collection.json>; rel="describedBy"
+
+
+{
+  "batches": [
+    {
+      "id": "8b2428d747",
+      "status": "finished",
+      "total_operations": 4,
+      "finished_operations": 4,
+      "errored_operations": 0,
+      "submitted_at": "2016-05-12T17:43:32+00:00",
+      "completed_at": "2016-05-12T17:43:42+00:00",
+      "response_body_url": "https://mailchimp-api-batch.s3.amazonaws.com/8b2428d747-response.tar.gz?AWSAccessKeyId=AKIAJWOH5BECJQZIEWNQ&Expires=1463075673&Signature=wiP0TZ7J9S52LvCUTWEvexGbldU%3D",
+      "_links": [
+        {
+          "rel": "parent",
+          "href": "https://usX.api.mailchimp.com/3.0/batches",
+          "method": "GET",
+          "targetSchema": "https://api.mailchimp.com/schema/3.0/Batches/Collection.json",
+          "schema": "https://api.mailchimp.com/schema/3.0/CollectionLinks/Batches.json"
+        },
+        {
+          "rel": "self",
+          "href": "https://usX.api.mailchimp.com/3.0/batches/8b2428d747",
+          "method": "GET",
+          "targetSchema": "https://api.mailchimp.com/schema/3.0/Batches/Instance.json"
+        }
+      ]
+    }
+  ],
+  "total_items": 1,
+  "_links": [
+    {
+      "rel": "parent",
+      "href": "https://usX.api.mailchimp.com/3.0/",
+      "method": "GET",
+      "targetSchema": "https://api.mailchimp.com/schema/3.0/Root.json"
+    },
+    {
+      "rel": "self",
+      "href": "https://usX.api.mailchimp.com/3.0/batches",
+      "method": "GET",
+      "targetSchema": "https://api.mailchimp.com/schema/3.0/Batches/Collection.json",
+      "schema": "https://api.mailchimp.com/schema/3.0/CollectionLinks/Batches.json"
+    },
+    {
+      "rel": "create",
+      "href": "https://usX.api.mailchimp.com/3.0/batches",
+      "method": "POST",
+      "schema": "https://api.mailchimp.com/schema/3.0/Batches/Create.json"
+    }
+  ]
+}
