@@ -1,0 +1,83 @@
+HTTP/1.1 200 OK
+Server: nginx
+Content-Type: application/json; charset=utf-8
+Content-Length: 1750
+Vary: Accept-Encoding
+X-Request-Id: 11c34056-1dea-4251-a86d-49c1c27e27ec
+Link: <https://api.mailchimp.com/schema/3.0/Lists/Segments/Collection.json>; rel="describedBy"
+Date: Wed, 16 Sep 2015 21:23:32 GMT
+Connection: keep-alive
+
+
+{
+  "segments": [
+    {
+      "id": 49377,
+      "name": "Freddie's Most Popular Jokes",
+      "member_count": 9,
+      "type": "static",
+      "created_at": "2015-09-16 21:14:46",
+      "updated_at": "2015-09-16 21:14:47",
+      "options": {
+        "match": "any",
+        "conditions": [
+          {
+            "field": "static_segment",
+            "op": "static_is",
+            "value": 49377
+          }
+        ]
+      },
+      "list_id": "57afe96172",
+      "_links": [
+        {
+          "rel": "self",
+          "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49377",
+          "method": "GET",
+          "targetSchema": "https://api.mailchimp.com/schema/3.0/Lists/Segments/Instance.json"
+        },
+        {
+          "rel": "parent",
+          "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments",
+          "method": "GET",
+          "targetSchema": "https://api.mailchimp.com/schema/3.0/Lists/Segments/Collection.json",
+          "schema": "https://api.mailchimp.com/schema/3.0/CollectionLinks/Lists/Segments.json"
+        },
+        {
+          "rel": "delete",
+          "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49377",
+          "method": "DELETE"
+        },
+        {
+          "rel": "update",
+          "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49377",
+          "method": "PATCH",
+          "schema": "https://api.mailchimp.com/schema/3.0/Lists/Segments/Instance.json"
+        }
+      ]
+    }
+  ],
+  "list_id": "57afe96172",
+  "_links": [
+    {
+      "rel": "self",
+      "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments",
+      "method": "GET",
+      "targetSchema": "https://api.mailchimp.com/schema/3.0/Lists/Segments/Collection.json",
+      "schema": "https://api.mailchimp.com/schema/3.0/CollectionLinks/Lists/Segments.json"
+    },
+    {
+      "rel": "parent",
+      "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172",
+      "method": "GET",
+      "targetSchema": "https://api.mailchimp.com/schema/3.0/Lists/Instance.json"
+    },
+    {
+      "rel": "create",
+      "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments",
+      "method": "POST",
+      "schema": "https://api.mailchimp.com/schema/3.0/Lists/Segments/Instance.json"
+    }
+  ],
+  "total_items": 1
+}

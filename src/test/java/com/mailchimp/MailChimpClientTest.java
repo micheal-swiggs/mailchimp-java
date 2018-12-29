@@ -5,6 +5,8 @@ import com.mailchimp.domain.ListMergeFields;
 import com.mailchimp.domain.Member;
 import com.mailchimp.domain.Members;
 import com.mailchimp.domain.Root;
+import com.mailchimp.domain.Segment;
+import com.mailchimp.domain.Segments;
 import com.mailchimp.domain.SubscriberList;
 import com.mailchimp.domain.SubscriberLists;
 import feign.Request;
@@ -88,7 +90,9 @@ public class MailChimpClientTest {
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=2&count=1", generateMockResponseByResource("3.0/lists_offset-2.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?offset=0&count=3", generateMockResponseByResource("3.0/lists/57afe96172/members.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields.txt"));
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381.txt"));
 
         mailChimpClient = MailChimpClient.builder()
                 .withClient(mockClient)
@@ -195,21 +199,47 @@ public class MailChimpClientTest {
     //TODO: createMergeField
     //TODO: removeListMergeField
 
+    @Test
+    public void getSegments_nonExistingListId_isNull(){
+        Segments segments = mailChimpClient.getSegments("nonExistingListId");
+        assertNull(segments);
+    }
 
-    //TODO: getSegments_nonExistingListId_isNull
-    //TODO: getSegments_existingListId_segments
-    //TODO: getSegment_nonExistingListId_isNull
-    //TODO: getSegment_existingListIdAndNonExistingSegmentId_isNull
-    //TODO: getSegment_existingListIdAndExistingSegmentId_segment
+    @Test
+    public void getSegments_existingListId_segments(){
+        Segments segments = mailChimpClient.getSegments("57afe96172");
+        assertEquals("57afe96172", segments.getListId());
+        assertEquals(1, segments.getTotalItems().intValue());
+    }
+
+    @Test
+    public void getSegment_nonExistingListId_isNull(){
+        Segment segment = mailChimpClient.getSegment("nonExistingListId", 49381);
+        assertNull(segment);
+    }
+
+    @Test
+    public void getSegment_existingListIdAndNonExistingSegmentId_isNull(){
+        Segment segment = mailChimpClient.getSegment("57afe96172", 0);
+        assertNull(segment);
+    }
+
+    @Test
+    public void getSegment_existingListIdAndExistingSegmentId_segment(){
+        Segment segment = mailChimpClient.getSegment("57afe96172", 49381);
+        assertEquals("57afe96172", segment.getListId());
+        assertEquals(49381, segment.getId().intValue());
+    }
+
     //TODO: createSegment
     //TODO: modifySegment
     //TODO: removeSegment
 
-    //TODO: createBatch
     //TODO: getBatch_nonExistingBatchId_isNull
     //TODO: getBatch_existingBatchId_batch
     //TODO: getBatches_firstPage_filledBatchList
     //TODO: getBatches_nonExistingPage_emptyList
+    //TODO: createBatch
     //TODO: removeBatch
 
     //TODO: searchMembers_invalidQuery_noResults
