@@ -6,6 +6,7 @@ import com.mailchimp.domain.ListMergeFields;
 import com.mailchimp.domain.Member;
 import com.mailchimp.domain.Members;
 import com.mailchimp.domain.Root;
+import com.mailchimp.domain.SearchMembers;
 import com.mailchimp.domain.Segment;
 import com.mailchimp.domain.Segments;
 import com.mailchimp.domain.SubscriberList;
@@ -95,7 +96,12 @@ public class MailChimpClientTest {
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches/8b2428d747", generateMockResponseByResource("3.0/batches/8b2428d747.txt"))
                 .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches?offset=0&count=1", generateMockResponseByResource("3.0/batches?offset=0&count=1.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches?offset=1&count=1", generateMockResponseByResource("3.0/batches?offset=1&count=1.txt"));
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches?offset=1&count=1", generateMockResponseByResource("3.0/batches?offset=1&count=1.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members",  generateMockResponseByResource("3.0/errors/400.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members?query=freddie@",  generateMockResponseByResource("3.0/search-members?query=freddie@.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members?query=freddie@&list_id=1",  generateMockResponseByResource("3.0/search-members?query=freddie@&list_id=1.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members?query=freddie@",  generateMockResponseByResource("3.0/search-members?query=freddie@.txt"))
+                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members?query=freddie@&list_id=57afe96172",  generateMockResponseByResource("3.0/search-members?query=freddie@.txt"));
 
         mailChimpClient = MailChimpClient.builder()
                 .withClient(mockClient)
@@ -265,10 +271,29 @@ public class MailChimpClientTest {
     //TODO: createBatch
     //TODO: removeBatch
 
-    //TODO: searchMembers_invalidQuery_noResults
-    //TODO: searchMembers_validQuery_results
-    //TODO: searchMembers_validQueryAndInvalidListId_noResults
-    //TODO: searchMembers_validQueryAndValidListId_results
+    @Test(expected = MailChimpErrorException.class)
+    public void searchMembers_emptyQuery_error(){
+        mailChimpClient.searchMembers("");
+    }
+
+    @Test
+    public void searchMembers_validQuery_results(){
+        SearchMembers searchMembers = mailChimpClient.searchMembers("freddie@");
+        assertEquals(6, searchMembers.getFullSearch().getTotalItems().intValue());
+        assertEquals("urist.mcvankab+6@freddiesjokes.com", searchMembers.getFullSearch().getMembers().get(0).getEmailAddress());
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void searchMembers_validQueryAndInvalidListId_error(){
+        SearchMembers searchMembers = mailChimpClient.searchMembers("freddie@", "1");
+    }
+
+    @Test
+    public void searchMembers_validQueryAndValidListId_results(){
+        SearchMembers searchMembers = mailChimpClient.searchMembers("freddie@", "57afe96172");
+        assertEquals(6, searchMembers.getFullSearch().getTotalItems().intValue());
+        assertEquals("urist.mcvankab+6@freddiesjokes.com", searchMembers.getFullSearch().getMembers().get(0).getEmailAddress());
+    }
 
     //TODO: lists responses as Page<T> response with page info
     //TODO: add method to get next paged response

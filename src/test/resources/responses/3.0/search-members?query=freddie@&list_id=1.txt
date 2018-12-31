@@ -1,0 +1,17 @@
+HTTP/1.1 400 Bad Request
+Server: nginx
+Date: Thu, 12 May 2016 17:44:57 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 192
+Connection: keep-alive
+Vary: Accept-Encoding
+X-Request-Id: c6991c2d-fd5b-4b96-b440-ce2db7e94ff3
+
+
+{
+    "type": "http://developer.mailchimp.com/documentation/mailchimp/guides/error-glossary/",
+    "title": "Invalid Resource",
+    "status": 400,
+    "detail": "List not found with given list_id 1",
+    "instance": "a1862ded-307c-42e3-82e7-74c224b977ea"
+}
