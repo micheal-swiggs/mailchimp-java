@@ -109,22 +109,32 @@ public class MailChimpClientTest {
     @Before
     public void setup() throws IOException {
         mockClient = new MockClient()
+                //root
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/", generateMockResponseByResource("3.0/root.txt"))
+                //list
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172", generateMockResponseByResource("3.0/lists/57afe96172.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists?offset=0&count=1", generateMockResponseByResource("3.0/lists?offset=0&count=1.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("3.0/lists?offset=1&count=1.txt"))
                 .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists", generateMockResponseByResource("3.0/lists.txt"))
                 .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/4ca5becb8d", generateMockResponseByResource("3.0/204.txt"))
                 .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/nonExistingId", generateMockResponseByResource("3.0/404.txt"))
-                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members", generateMockResponseByResource("3.0/lists/57afe96172/members.post.txt"))
+                //list member
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?offset=0&count=3", generateMockResponseByResource("3.0/lists/57afe96172/members.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members", generateMockResponseByResource("3.0/lists/57afe96172/members.post.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/nonExistingId/members", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.PUT, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.put.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.delete.txt"))
+                //list merge-field
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields.txt"))
+                //list segment
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381.txt"))
+                //batch
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches/8b2428d747", generateMockResponseByResource("3.0/batches/8b2428d747.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches?offset=0&count=1", generateMockResponseByResource("3.0/batches?offset=0&count=1.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches?offset=1&count=1", generateMockResponseByResource("3.0/batches?offset=1&count=1.txt"))
+                //searcg-members
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members", generateMockResponseByResource("3.0/400.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@", generateMockResponseByResource("3.0/search-members?query=freddie@.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@&list_id=1", generateMockResponseByResource("3.0/search-members?query=freddie@&list_id=1.txt"))
@@ -270,8 +280,30 @@ public class MailChimpClientTest {
         assertNotNull(createdMember.getLastChanged());
     }
 
-    //TODO: updateListMember
-    //TODO: removeListMember
+    @Test
+    public void createListMember_nonExistingId_isNull(){
+        Member member = Member.builder()
+                .emailAddress("urist.mcvankab+3@freddiesjokes.com")
+                .status(SubscribeStatus.SUBSCRIBED)
+                //.tags(Arrays.asList(new String[] { "a tag", "another tag" }))
+                .build();
+
+        Member createdMember = mailChimpClient.createListMember("nonExistingId", member);
+        assertNull(createdMember);
+    }
+
+    @Test
+    public void updateListMember_validListIdAndMember_updatedListMember(){
+        Member member = mailChimpClient.getListMember("57afe96172", "852aaa9532cb36adfb5e9fef7a4206a9");
+        member.setStatus(SubscribeStatus.UNSUBSCRIBED);
+        Member updatedMember = mailChimpClient.updateListMember(member.getListId(), member.getSubscriberHash(), member);
+        assertEquals(SubscribeStatus.UNSUBSCRIBED, updatedMember.getStatus());
+    }
+
+    @Test
+    public void removeListMember_validListIdAndMember_removedListMember(){
+        mailChimpClient.removeListMember("57afe96172", "852aaa9532cb36adfb5e9fef7a4206a9");
+    }
 
     @Test
     public void getListMembers_nonExistingListId_isNull(){
