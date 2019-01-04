@@ -1,0 +1,17 @@
+HTTP/1.1 404 Not Found
+Server: nginx
+Date: Thu, 12 May 2016 17:44:57 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 199
+Connection: keep-alive
+Vary: Accept-Encoding
+X-Request-Id: c6991c2d-fd5b-4b96-b440-ce2db7e94ff3
+
+
+{
+    "type": "http://developer.mailchimp.com/documentation/mailchimp/guides/error-glossary/",
+    "title": "Resource Not Found",
+    "status": 404,
+    "detail": "The requested resource could not be found.",
+    "instance": "51e8a602-c516-4f09-a58f-19885243b0c6"
+}

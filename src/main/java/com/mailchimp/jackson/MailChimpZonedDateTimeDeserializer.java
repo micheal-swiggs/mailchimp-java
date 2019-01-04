@@ -16,7 +16,7 @@ import java.time.format.DateTimeParseException;
  */
 public final class MailChimpZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
 
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(MailChimpClient.DATETIME_FORMAT).withZone(ZoneId.of("UTC"));
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;//.ofPattern(MailChimpClient.DATETIME_FORMAT).withZone(ZoneId.of("UTC"));
 
     @Override
     public ZonedDateTime deserialize(final JsonParser parser, final DeserializationContext context) throws IOException, JsonProcessingException {
@@ -25,7 +25,7 @@ public final class MailChimpZonedDateTimeDeserializer extends JsonDeserializer<Z
             return null;
         }
         try {
-            ZonedDateTime date = ZonedDateTime.parse(stringDate, dateTimeFormatter);
+             ZonedDateTime date = ZonedDateTime.parse(stringDate, dateTimeFormatter);
             return date;
         } catch (DateTimeParseException ex) {
             //when format is incorrect set to null

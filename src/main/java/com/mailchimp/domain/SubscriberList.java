@@ -6,7 +6,10 @@ import com.mailchimp.jackson.MailChimpZonedDateTimeDeserializer;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -22,7 +25,10 @@ public class SubscriberList {
         pub, prv
     }
 
-    public class ListContact {
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class Contact {
 
         /**
          * The company name for the list.
@@ -167,7 +173,7 @@ public class SubscriberList {
      */
     @JsonProperty("contact")
     @Getter
-    private ListContact contact = new ListContact();
+    private Contact contact = new Contact();
 
     /**
      * The <a href="http://kb.mailchimp.com/accounts/compliance-tips/edit-the-permission-reminder?utm_source=mc-api&amp;utm_medium=docs&amp;utm_campaign=apidocs">permission reminder</a> for the list.
@@ -297,11 +303,11 @@ public class SubscriberList {
         this.name = name;
     }
 
-    public ListContact getContact() {
+    public Contact getContact() {
         return contact;
     }
 
-    public void setContact(ListContact contact) {
+    public void setContact(Contact contact) {
         this.contact = contact;
     }
 

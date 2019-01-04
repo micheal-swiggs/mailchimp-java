@@ -2,6 +2,7 @@ package com.mailchimp;
 
 import com.mailchimp.domain.Batch;
 import com.mailchimp.domain.Batches;
+import com.mailchimp.domain.CampaignDefaults;
 import com.mailchimp.domain.ListMergeFields;
 import com.mailchimp.domain.Member;
 import com.mailchimp.domain.Members;
@@ -9,6 +10,7 @@ import com.mailchimp.domain.Root;
 import com.mailchimp.domain.SearchMembers;
 import com.mailchimp.domain.Segment;
 import com.mailchimp.domain.Segments;
+import com.mailchimp.domain.SubscribeStatus;
 import com.mailchimp.domain.SubscriberList;
 import com.mailchimp.domain.SubscriberLists;
 import feign.Response;
@@ -17,9 +19,11 @@ import feign.mock.MockClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
@@ -49,7 +53,7 @@ public class MailChimpClientTest {
     }
 
     private static Response.Builder generateMockResponseByResource(String resourceName)
-        throws IOException {
+            throws IOException {
         InputStream is = getResponseResourceAsStream(resourceName);
         String responseString = IOUtils.toString(is);
 
@@ -59,49 +63,73 @@ public class MailChimpClientTest {
         String statusCodeString = statusString.substring(statusString.indexOf(" ") + 1, statusString.indexOf(" ") + 4);
         int statusCode = Integer.parseInt(statusCodeString);
 
+        Map<String, Collection<String>> headers;
+        String bodyString = null;
+
         //headers
         int split = responseString.indexOf("\n\n");
-        String headersString = responseString.substring(responseString.indexOf("\n")+1, split);
-        String[] headersStrings = headersString.split("\n");
-        Map<String, Collection<String>> headers = new HashMap<>();
-        for(String headerString : headersStrings){
-            String headerName = headerString.split(": ")[0];
-            String headerValue = headerString.split(": ")[1];
-            String[] headerValues = headerValue.split("; ");
-            headers.put(headerName, Arrays.asList(headerValues));
-        }
+        if(split == -1){
+            //has no body
+            String headersString = responseString.substring(responseString.indexOf("\n") + 1);
+            String[] headersStrings = headersString.split("\n");
+            headers = new HashMap<>();
+            for (String headerString : headersStrings) {
+                String headerName = headerString.split(": ")[0];
+                String headerValue = headerString.split(": ")[1];
+                String[] headerValues = headerValue.split("; ");
+                headers.put(headerName, Arrays.asList(headerValues));
+            }
+        }else{
+            //has body
+            String headersString = responseString.substring(responseString.indexOf("\n") + 1, split);
+            String[] headersStrings = headersString.split("\n");
+            headers = new HashMap<>();
+            for (String headerString : headersStrings) {
+                String headerName = headerString.split(": ")[0];
+                String headerValue = headerString.split(": ")[1];
+                String[] headerValues = headerValue.split("; ");
+                headers.put(headerName, Arrays.asList(headerValues));
+            }
 
-        //body
-        String bodyString = responseString.substring(split+3);
+            //body
+            bodyString = responseString.substring(split + 3);
+        }
 
         //create response
         Response.Builder responseBuilder = Response.builder()
                 .status(statusCode)
-                .headers(headers)
-                .body(bodyString, Charset.defaultCharset());
+                .headers(headers);
+        if(bodyString != null) {
+            responseBuilder.body(bodyString, Charset.defaultCharset());
+        }
+
         return responseBuilder;
     }
 
     @Before
     public void setup() throws IOException {
         mockClient = new MockClient()
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/", generateMockResponseByResource("3.0/root.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172", generateMockResponseByResource("3.0/lists/57afe96172.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=0&count=1", generateMockResponseByResource("3.0/lists?offset=0&count=1.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("3.0/lists?offset=1&count=1.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?offset=0&count=3", generateMockResponseByResource("3.0/lists/57afe96172/members.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches/8b2428d747", generateMockResponseByResource("3.0/batches/8b2428d747.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches?offset=0&count=1", generateMockResponseByResource("3.0/batches?offset=0&count=1.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/batches?offset=1&count=1", generateMockResponseByResource("3.0/batches?offset=1&count=1.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members",  generateMockResponseByResource("3.0/errors/400.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members?query=freddie@",  generateMockResponseByResource("3.0/search-members?query=freddie@.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members?query=freddie@&list_id=1",  generateMockResponseByResource("3.0/search-members?query=freddie@&list_id=1.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members?query=freddie@",  generateMockResponseByResource("3.0/search-members?query=freddie@.txt"))
-                .add(HttpMethod.GET,"https://usX.api.mailchimp.com/3.0/search-members?query=freddie@&list_id=57afe96172",  generateMockResponseByResource("3.0/search-members?query=freddie@.txt"));
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/", generateMockResponseByResource("3.0/root.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172", generateMockResponseByResource("3.0/lists/57afe96172.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists?offset=0&count=1", generateMockResponseByResource("3.0/lists?offset=0&count=1.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("3.0/lists?offset=1&count=1.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists", generateMockResponseByResource("3.0/lists.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/4ca5becb8d", generateMockResponseByResource("3.0/204.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/nonExistingId", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members", generateMockResponseByResource("3.0/lists/57afe96172/members.post.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?offset=0&count=3", generateMockResponseByResource("3.0/lists/57afe96172/members.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches/8b2428d747", generateMockResponseByResource("3.0/batches/8b2428d747.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches?offset=0&count=1", generateMockResponseByResource("3.0/batches?offset=0&count=1.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches?offset=1&count=1", generateMockResponseByResource("3.0/batches?offset=1&count=1.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members", generateMockResponseByResource("3.0/400.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@", generateMockResponseByResource("3.0/search-members?query=freddie@.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@&list_id=1", generateMockResponseByResource("3.0/search-members?query=freddie@&list_id=1.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@", generateMockResponseByResource("3.0/search-members?query=freddie@.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@&list_id=57afe96172", generateMockResponseByResource("3.0/search-members?query=freddie@.txt"));
 
         mailChimpClient = MailChimpClient.builder()
                 .withClient(mockClient)
@@ -116,7 +144,7 @@ public class MailChimpClientTest {
     }
 
     @Test
-    public void builder_default_returnsBuilder(){
+    public void builder_default_returnsBuilder() {
         MailChimpClientBuilder builder = MailChimpClient.builder();
         assertNotNull(builder);
     }
@@ -134,44 +162,112 @@ public class MailChimpClientTest {
     }
 
     @Test
-    public void getSubscriberList_existingListId_oneList(){
+    public void getSubscriberList_existingListId_oneList() {
         SubscriberList list = mailChimpClient.getSubscriberList("57afe96172");
         assertEquals("57afe96172", list.getId());
     }
 
     @Test
-    public void getSubscriberLists_offset0AndCount1_filledLists(){
+    public void getSubscriberLists_offset0AndCount1_filledLists() {
         SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(0, 1);
         assertEquals(1, subscriberLists.getTotalItems().intValue());
         assertEquals("57afe96172", subscriberLists.getLists().get(0).getId());
     }
 
     @Test
-    public void getSubscriberList_offset1AndCount1_emptyList(){
+    public void getSubscriberList_offset1AndCount1_emptyList() {
         SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(1, 1);
         assertEquals(0, subscriberLists.getLists().size());
     }
 
-    //TODO: createSubscriberList
-    //TODO: removeSubscriberList
+    @Test
+    public void createSubscriberList_valid_createdList(){
+        SubscriberList subscriberList = new SubscriberList();
+        subscriberList.setName("Freddie's Favorite Hats");
+        SubscriberList.Contact contact = SubscriberList.Contact.builder()
+                .company("Mailchimp")
+                .address1("675 Ponce De Leon Ave NE")
+                .address2("Suite 5000")
+                .city("Atlanta")
+                .state("GA")
+                .zip("30308")
+                .country("US")
+                .phone("")
+                .build();
+        subscriberList.setContact(contact);
+        subscriberList.setPermissionReminder("You're receiving this email because you signed up for updates about Freddie's newest hats.");
+        CampaignDefaults campaignDefaults = CampaignDefaults.builder()
+                .fromName("Freddie")
+                .fromEmail("freddie@freddiehats.com")
+                .subject("")
+                .language("en")
+                .build();
+        subscriberList.setCampaignDefaults(campaignDefaults);
+        subscriberList.setEmailTypeOption(true);
+
+        //create
+        subscriberList = mailChimpClient.createSubscriberList(subscriberList);
+
+        //check
+        assertNotNull(subscriberList.getId());
+        assertEquals("Freddie's Favorite Hats", subscriberList.getName());
+        assertEquals("Atlanta", subscriberList.getContact().getCity());
+        assertEquals("Freddie", subscriberList.getCampaignDefaults().getFromName());
+        assertNotNull(subscriberList.getDateCreated());
+        assertEquals(0, subscriberList.getListRating().intValue());
+        assertNotNull(subscriberList.getSubscribeUrlShort());
+        assertNotNull(subscriberList.getSubscribeUrlLong());
+        assertNotNull(subscriberList.getBeamerAddress());
+        assertEquals(SubscriberList.Visibility.pub, subscriberList.getVisibility());
+        assertEquals(0, subscriberList.getStats().getMemberCount().intValue());
+    }
 
     @Test
-    public void  getListMember_existingListIdAndExistingSubscruberHash_listMember(){
+    public void removeSubscriberList_existingId_removed(){
+        mailChimpClient.removeSubscriberList("4ca5becb8d");//204
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void removeSubscriberList_nonExistingId_removed(){
+        mailChimpClient.removeSubscriberList("nonExistingId");
+    }
+
+    @Test
+    public void getListMember_existingListIdAndExistingSubscruberHash_listMember(){
         Member member = mailChimpClient.getListMember("57afe96172", "852aaa9532cb36adfb5e9fef7a4206a9");
         assertEquals("57afe96172", member.getListId());
         assertEquals("852aaa9532cb36adfb5e9fef7a4206a9", member.getSubscriberHash());
     }
 
     @Test
-    public void  getListMember_nonExistingListId_isNull(){
+    public void getListMember_nonExistingListId_isNull(){
         Member member = mailChimpClient.getListMember("nonExistingListId", "852aaa9532cb36adfb5e9fef7a4206a9");
         assertNull(member);
     }
 
     @Test
-    public void  getListMember_existingListIdAndNonExistingSubscruberHash_isNull(){
+    public void getListMember_existingListIdAndNonExistingSubscruberHash_isNull(){
         Member member = mailChimpClient.getListMember("57afe96172", "nonExistingSubscriberHash");
         assertNull(member);
+    }
+
+    @Test
+    public void createListMember_validListIdAndMember_createdListMember(){
+        Member member = Member.builder()
+                .emailAddress("urist.mcvankab+3@freddiesjokes.com")
+                .status(SubscribeStatus.SUBSCRIBED)
+                //.tags(Arrays.asList(new String[] { "a tag", "another tag" }))
+                .build();
+
+        Member createdMember = mailChimpClient.createListMember("57afe96172", member);
+
+        assertNotNull(createdMember.getId());
+        assertEquals("urist.mcvankab+3@freddiesjokes.com", createdMember.getEmailAddress());
+        assertEquals(SubscribeStatus.SUBSCRIBED, createdMember.getStatus());
+        //assertEquals(2, createdMember.getTagsCount());
+        assertEquals("198.2.191.34", createdMember.getIpOpt());
+        assertNotNull(createdMember.getTimestampOpt());
+        assertNotNull(createdMember.getLastChanged());
     }
 
     //TODO: updateListMember
