@@ -15,6 +15,7 @@ import com.mailchimp.domain.List;
 import com.mailchimp.domain.Lists;
 import com.mailchimp.query.BatchesQuery;
 import com.mailchimp.query.ListMembersQuery;
+import com.mailchimp.query.ListsQuery;
 import feign.Response;
 import feign.mock.HttpMethod;
 import feign.mock.MockClient;
@@ -180,14 +181,22 @@ public class MailChimpClientTest {
 
     @Test
     public void getLists_offset0AndCount1_filledLists() {
-        Lists lists = mailChimpClient.getLists(0, 1);
+        ListsQuery query = ListsQuery.builder()
+                .offset(0)
+                .count(1)
+                .build();
+        Lists lists = mailChimpClient.getLists(query);
         assertEquals(1, lists.getTotalItems().intValue());
         assertEquals("57afe96172", lists.getLists().get(0).getId());
     }
 
     @Test
     public void getList_offset1AndCount1_emptyList() {
-        Lists lists = mailChimpClient.getLists(1, 1);
+        ListsQuery query = ListsQuery.builder()
+                .offset(1)
+                .count(1)
+                .build();
+        Lists lists = mailChimpClient.getLists(query);
         assertEquals(0, lists.getLists().size());
     }
 

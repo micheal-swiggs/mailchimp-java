@@ -8,14 +8,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BatchesQuery {
+public class ListsQuery {
+
     @Getter
     private Integer offset;
 
     @Getter
     private Integer count;
 
-    public static BatchesQuery firstPage(){
-        return new BatchesQuery();
+    public static ListsQuery firstPage(){
+        return new ListsQuery();
     }
 }

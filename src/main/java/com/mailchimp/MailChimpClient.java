@@ -3,6 +3,7 @@ package com.mailchimp;
 import com.mailchimp.domain.*;
 import com.mailchimp.query.BatchesQuery;
 import com.mailchimp.query.ListMembersQuery;
+import com.mailchimp.query.ListsQuery;
 import feign.Param;
 import feign.QueryMap;
 import feign.RequestLine;
@@ -48,8 +49,8 @@ public interface MailChimpClient {
     @RequestLine("GET /3.0/lists/{list-id}")
     List getList(@Param("list-id") String listId);
 
-    @RequestLine("GET /3.0/lists?offset={offset}&count={count}")
-    Lists getLists(@Param("offset") Integer offset, @Param("count") Integer count);
+    @RequestLine("GET /3.0/lists")
+    Lists getLists(@QueryMap ListsQuery query);
 
     @RequestLine("GET /3.0/lists/{list-id}/members")
     Members getListMembers(@Param("list-id") String listId, @QueryMap ListMembersQuery query);
