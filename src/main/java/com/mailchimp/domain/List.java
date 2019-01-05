@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mailchimp.jackson.MailChimpZonedDateTimeDeserializer;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,9 +18,9 @@ import lombok.Setter;
  * @author Micheal Swiggs
  * @author stevensnoeijen
  */
-public class SubscriberList {
+public class List {
 
-    public static enum Visibility {
+    public enum Visibility {
         pub, prv
     }
 
@@ -407,11 +406,11 @@ public class SubscriberList {
         this.visibility = visibility;
     }
 
-    public List<String> getModules() {
+    public java.util.List<String> getModules() {
         return modules;
     }
 
-    public void setModules(List<String> modules) {
+    public void setModules(java.util.List<String> modules) {
         this.modules = modules;
     }
 

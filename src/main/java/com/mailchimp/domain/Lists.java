@@ -1,23 +1,22 @@
 package com.mailchimp.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import lombok.Data;
 
 @Data
-public class SubscriberLists {
+public class Lists {
 
     @JsonProperty("lists")
-    private List<SubscriberList> lists;
+    private java.util.List<List> lists;
 
     @JsonProperty("total_items")
     private Integer totalItems;
 
-    public List<SubscriberList> getLists() {
+    public java.util.List<List> getLists() {
         return lists;
     }
 
-    public void setLists(List<SubscriberList> lists) {
+    public void setLists(java.util.List<List> lists) {
         this.lists = lists;
     }
 

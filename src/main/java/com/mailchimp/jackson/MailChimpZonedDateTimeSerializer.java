@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
  */
 public final class MailChimpZonedDateTimeSerializer extends JsonSerializer<ZonedDateTime> {
 
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(MailChimpClient.DATETIME_FORMAT).withZone(ZoneId.of("UTC"));
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     @Override
     public void serialize(final ZonedDateTime value, final JsonGenerator gen, final SerializerProvider arg2) throws IOException, JsonProcessingException {

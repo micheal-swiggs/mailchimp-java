@@ -1,6 +1,8 @@
 package com.mailchimp;
 
 import com.mailchimp.domain.*;
+import com.mailchimp.query.BatchesQuery;
+import com.mailchimp.query.ListMembersQuery;
 import feign.Param;
 import feign.QueryMap;
 import feign.RequestLine;
@@ -9,8 +11,6 @@ import feign.RequestLine;
  * @author stevensnoeijen, eamoralesl
  */
 public interface MailChimpClient {
-
-    public static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     /**
      * API Root
@@ -40,25 +40,19 @@ public interface MailChimpClient {
      * @return created list
      */
     @RequestLine("POST /3.0/lists")
-    SubscriberList createSubscriberList(SubscriberList list);
+    List createSubscriberList(List list);
 
     @RequestLine("DELETE /3.0/lists/{list-id}")
     void removeSubscriberList(@Param("list-id") String listId);
 
     @RequestLine("GET /3.0/lists/{list-id}")
-    SubscriberList getSubscriberList(@Param("list-id") String listId);
+    List getSubscriberList(@Param("list-id") String listId);
 
     @RequestLine("GET /3.0/lists?offset={offset}&count={count}")
-    SubscriberLists getSubscriberLists(@Param("offset") Integer offset, @Param("count") Integer count);
+    Lists getSubscriberLists(@Param("offset") Integer offset, @Param("count") Integer count);
 
     @RequestLine("GET /3.0/lists/{list-id}/members")
-    Members getListMembers(@Param("list-id") String listId);
-
-    @RequestLine("GET /3.0/lists/{list-id}/members")
-    Members getListMembers(@Param("list-id") String listId, @QueryMap Page page);
-
-    @RequestLine("GET /3.0/lists/{list-id}/members?status={status}")
-    Members getListMembersByStatus(@Param("list-id") String listId, @Param(value = "status", expander = StatusToLower.class) SubscribeStatus status, @QueryMap Page page);
+    Members getListMembers(@Param("list-id") String listId, @QueryMap ListMembersQuery query);
 
     @RequestLine("GET /3.0/lists/{list-id}/merge-fields")
     ListMergeFields getListMergeFields(@Param("list-id") String listId);
@@ -91,7 +85,7 @@ public interface MailChimpClient {
     Batch getBatch(@Param("batch-id") String batchId);
 
     @RequestLine("GET /3.0/batches")
-    Batches getBatches(@QueryMap Page page);
+    Batches getBatches(@QueryMap BatchesQuery query);
 
     @RequestLine("DELETE /3.0/batches/{batch-id}")
     void removeBatch(@Param("batch-id") String batchId);

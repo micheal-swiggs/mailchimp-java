@@ -11,19 +11,19 @@ import com.mailchimp.domain.SearchMembers;
 import com.mailchimp.domain.Segment;
 import com.mailchimp.domain.Segments;
 import com.mailchimp.domain.SubscribeStatus;
-import com.mailchimp.domain.SubscriberList;
-import com.mailchimp.domain.SubscriberLists;
+import com.mailchimp.domain.List;
+import com.mailchimp.domain.Lists;
+import com.mailchimp.query.BatchesQuery;
+import com.mailchimp.query.ListMembersQuery;
 import feign.Response;
 import feign.mock.HttpMethod;
 import feign.mock.MockClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
@@ -120,7 +120,8 @@ public class MailChimpClientTest {
                 .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/nonExistingId", generateMockResponseByResource("3.0/404.txt"))
                 //list member
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.txt"))
-                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?offset=0&count=3", generateMockResponseByResource("3.0/lists/57afe96172/members.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members", generateMockResponseByResource("3.0/lists/57afe96172/members.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?status=subscribed", generateMockResponseByResource("3.0/lists/57afe96172/members.txt"))
                 .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members", generateMockResponseByResource("3.0/lists/57afe96172/members.post.txt"))
                 .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/nonExistingId/members", generateMockResponseByResource("3.0/404.txt"))
                 .add(HttpMethod.PUT, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.put.txt"))
@@ -167,34 +168,34 @@ public class MailChimpClientTest {
 
     @Test
     public void getSubscriberList_nonExistingListId_isNull() {
-        SubscriberList list = mailChimpClient.getSubscriberList("nonExistingList");
+        List list = mailChimpClient.getSubscriberList("nonExistingList");
         assertNull(list);
     }
 
     @Test
     public void getSubscriberList_existingListId_oneList() {
-        SubscriberList list = mailChimpClient.getSubscriberList("57afe96172");
+        List list = mailChimpClient.getSubscriberList("57afe96172");
         assertEquals("57afe96172", list.getId());
     }
 
     @Test
     public void getSubscriberLists_offset0AndCount1_filledLists() {
-        SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(0, 1);
-        assertEquals(1, subscriberLists.getTotalItems().intValue());
-        assertEquals("57afe96172", subscriberLists.getLists().get(0).getId());
+        Lists lists = mailChimpClient.getSubscriberLists(0, 1);
+        assertEquals(1, lists.getTotalItems().intValue());
+        assertEquals("57afe96172", lists.getLists().get(0).getId());
     }
 
     @Test
     public void getSubscriberList_offset1AndCount1_emptyList() {
-        SubscriberLists subscriberLists = mailChimpClient.getSubscriberLists(1, 1);
-        assertEquals(0, subscriberLists.getLists().size());
+        Lists lists = mailChimpClient.getSubscriberLists(1, 1);
+        assertEquals(0, lists.getLists().size());
     }
 
     @Test
     public void createSubscriberList_valid_createdList(){
-        SubscriberList subscriberList = new SubscriberList();
+        List subscriberList = new List();
         subscriberList.setName("Freddie's Favorite Hats");
-        SubscriberList.Contact contact = SubscriberList.Contact.builder()
+        List.Contact contact = List.Contact.builder()
                 .company("Mailchimp")
                 .address1("675 Ponce De Leon Ave NE")
                 .address2("Suite 5000")
@@ -228,7 +229,7 @@ public class MailChimpClientTest {
         assertNotNull(subscriberList.getSubscribeUrlShort());
         assertNotNull(subscriberList.getSubscribeUrlLong());
         assertNotNull(subscriberList.getBeamerAddress());
-        assertEquals(SubscriberList.Visibility.pub, subscriberList.getVisibility());
+        assertEquals(List.Visibility.pub, subscriberList.getVisibility());
         assertEquals(0, subscriberList.getStats().getMemberCount().intValue());
     }
 
@@ -265,7 +266,7 @@ public class MailChimpClientTest {
     public void createListMember_validListIdAndMember_createdListMember(){
         Member member = Member.builder()
                 .emailAddress("urist.mcvankab+3@freddiesjokes.com")
-                .status(SubscribeStatus.SUBSCRIBED)
+                .status(SubscribeStatus.subscribed)
                 //.tags(Arrays.asList(new String[] { "a tag", "another tag" }))
                 .build();
 
@@ -273,7 +274,7 @@ public class MailChimpClientTest {
 
         assertNotNull(createdMember.getId());
         assertEquals("urist.mcvankab+3@freddiesjokes.com", createdMember.getEmailAddress());
-        assertEquals(SubscribeStatus.SUBSCRIBED, createdMember.getStatus());
+        assertEquals(SubscribeStatus.subscribed, createdMember.getStatus());
         //assertEquals(2, createdMember.getTagsCount());
         assertEquals("198.2.191.34", createdMember.getIpOpt());
         assertNotNull(createdMember.getTimestampOpt());
@@ -284,7 +285,7 @@ public class MailChimpClientTest {
     public void createListMember_nonExistingId_isNull(){
         Member member = Member.builder()
                 .emailAddress("urist.mcvankab+3@freddiesjokes.com")
-                .status(SubscribeStatus.SUBSCRIBED)
+                .status(SubscribeStatus.subscribed)
                 //.tags(Arrays.asList(new String[] { "a tag", "another tag" }))
                 .build();
 
@@ -295,9 +296,9 @@ public class MailChimpClientTest {
     @Test
     public void updateListMember_validListIdAndMember_updatedListMember(){
         Member member = mailChimpClient.getListMember("57afe96172", "852aaa9532cb36adfb5e9fef7a4206a9");
-        member.setStatus(SubscribeStatus.UNSUBSCRIBED);
+        member.setStatus(SubscribeStatus.unsubscribed);
         Member updatedMember = mailChimpClient.updateListMember(member.getListId(), member.getSubscriberHash(), member);
-        assertEquals(SubscribeStatus.UNSUBSCRIBED, updatedMember.getStatus());
+        assertEquals(SubscribeStatus.unsubscribed, updatedMember.getStatus());
     }
 
     @Test
@@ -307,18 +308,26 @@ public class MailChimpClientTest {
 
     @Test
     public void getListMembers_nonExistingListId_isNull(){
-        Members members = mailChimpClient.getListMembers("nonExistingId");
+        Members members = mailChimpClient.getListMembers("nonExistingId", ListMembersQuery.all());
         assertNull(members);
     }
 
     @Test
     public void getListMembers_firstPage_filledLists(){
-        Members members = mailChimpClient.getListMembers("57afe96172", new Page(0, 3));
+        Members members = mailChimpClient.getListMembers("57afe96172", ListMembersQuery.all());
         assertEquals("57afe96172", members.getListId());
         assertEquals(3, members.getMembers().size());
     }
 
-    //TODO: getListMembersByStatus, combine this into one method
+    @Test
+    public void getListMembers_withStatusEqSubscribed_listWithUnsubscribed(){
+        ListMembersQuery query = ListMembersQuery.builder()
+                .status(SubscribeStatus.subscribed)
+                .build();
+        Members members = mailChimpClient.getListMembers("57afe96172", query);
+        assertEquals("57afe96172", members.getListId());
+        assertEquals(SubscribeStatus.subscribed, members.getMembers().get(0).getStatus());
+    }
 
     @Test
     public void getListMergeFields_nonExistingListId_isNull(){
@@ -386,13 +395,21 @@ public class MailChimpClientTest {
 
     @Test
     public void getBatches_Offset0_filledBatchList(){
-        Batches batches = mailChimpClient.getBatches( new Page(0, 1));
+        BatchesQuery query = BatchesQuery.builder()
+                .offset(0)
+                .count(1)
+                .build();
+        Batches batches = mailChimpClient.getBatches(query);
         assertEquals(1, batches.getBatches().size());
     }
 
     @Test
     public void getBatches_nonExistingPage_emptyList(){
-        Batches batches = mailChimpClient.getBatches(new Page(1, 1));
+        BatchesQuery query = BatchesQuery.builder()
+                .offset(1)
+                .count(1)
+                .build();
+        Batches batches = mailChimpClient.getBatches(query);
         assertEquals(0, batches.getBatches().size());
     }
 
@@ -423,6 +440,6 @@ public class MailChimpClientTest {
         assertEquals("urist.mcvankab+6@freddiesjokes.com", searchMembers.getFullSearch().getMembers().get(0).getEmailAddress());
     }
 
-    //TODO: lists responses as Page<T> response with page info
+    //TODO: lists responses as BaseQuery<T> response with page info
     //TODO: add method to get next paged response
 }
