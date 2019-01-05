@@ -167,35 +167,35 @@ public class MailChimpClientTest {
     }
 
     @Test
-    public void getSubscriberList_nonExistingListId_isNull() {
-        List list = mailChimpClient.getSubscriberList("nonExistingList");
+    public void getList_nonExistingListId_isNull() {
+        List list = mailChimpClient.getList("nonExistingList");
         assertNull(list);
     }
 
     @Test
-    public void getSubscriberList_existingListId_oneList() {
-        List list = mailChimpClient.getSubscriberList("57afe96172");
+    public void getList_existingListId_oneList() {
+        List list = mailChimpClient.getList("57afe96172");
         assertEquals("57afe96172", list.getId());
     }
 
     @Test
-    public void getSubscriberLists_offset0AndCount1_filledLists() {
-        Lists lists = mailChimpClient.getSubscriberLists(0, 1);
+    public void getLists_offset0AndCount1_filledLists() {
+        Lists lists = mailChimpClient.getLists(0, 1);
         assertEquals(1, lists.getTotalItems().intValue());
         assertEquals("57afe96172", lists.getLists().get(0).getId());
     }
 
     @Test
-    public void getSubscriberList_offset1AndCount1_emptyList() {
-        Lists lists = mailChimpClient.getSubscriberLists(1, 1);
+    public void getList_offset1AndCount1_emptyList() {
+        Lists lists = mailChimpClient.getLists(1, 1);
         assertEquals(0, lists.getLists().size());
     }
 
     @Test
-    public void createSubscriberList_valid_createdList(){
-        List subscriberList = new List();
-        subscriberList.setName("Freddie's Favorite Hats");
-        List.Contact contact = List.Contact.builder()
+    public void createList_valid_createdList(){
+        List List = new List();
+        List.setName("Freddie's Favorite Hats");
+        List.Contact contact = com.mailchimp.domain.List.Contact.builder()
                 .company("Mailchimp")
                 .address1("675 Ponce De Leon Ave NE")
                 .address2("Suite 5000")
@@ -205,42 +205,42 @@ public class MailChimpClientTest {
                 .country("US")
                 .phone("")
                 .build();
-        subscriberList.setContact(contact);
-        subscriberList.setPermissionReminder("You're receiving this email because you signed up for updates about Freddie's newest hats.");
+        List.setContact(contact);
+        List.setPermissionReminder("You're receiving this email because you signed up for updates about Freddie's newest hats.");
         CampaignDefaults campaignDefaults = CampaignDefaults.builder()
                 .fromName("Freddie")
                 .fromEmail("freddie@freddiehats.com")
                 .subject("")
                 .language("en")
                 .build();
-        subscriberList.setCampaignDefaults(campaignDefaults);
-        subscriberList.setEmailTypeOption(true);
+        List.setCampaignDefaults(campaignDefaults);
+        List.setEmailTypeOption(true);
 
         //create
-        subscriberList = mailChimpClient.createSubscriberList(subscriberList);
+        List = mailChimpClient.createList(List);
 
         //check
-        assertNotNull(subscriberList.getId());
-        assertEquals("Freddie's Favorite Hats", subscriberList.getName());
-        assertEquals("Atlanta", subscriberList.getContact().getCity());
-        assertEquals("Freddie", subscriberList.getCampaignDefaults().getFromName());
-        assertNotNull(subscriberList.getDateCreated());
-        assertEquals(0, subscriberList.getListRating().intValue());
-        assertNotNull(subscriberList.getSubscribeUrlShort());
-        assertNotNull(subscriberList.getSubscribeUrlLong());
-        assertNotNull(subscriberList.getBeamerAddress());
-        assertEquals(List.Visibility.pub, subscriberList.getVisibility());
-        assertEquals(0, subscriberList.getStats().getMemberCount().intValue());
+        assertNotNull(List.getId());
+        assertEquals("Freddie's Favorite Hats", List.getName());
+        assertEquals("Atlanta", List.getContact().getCity());
+        assertEquals("Freddie", List.getCampaignDefaults().getFromName());
+        assertNotNull(List.getDateCreated());
+        assertEquals(0, List.getListRating().intValue());
+        assertNotNull(List.getSubscribeUrlShort());
+        assertNotNull(List.getSubscribeUrlLong());
+        assertNotNull(List.getBeamerAddress());
+        assertEquals(com.mailchimp.domain.List.Visibility.pub, List.getVisibility());
+        assertEquals(0, List.getStats().getMemberCount().intValue());
     }
 
     @Test
-    public void removeSubscriberList_existingId_removed(){
-        mailChimpClient.removeSubscriberList("4ca5becb8d");//204
+    public void removeList_existingId_removed(){
+        mailChimpClient.removeList("4ca5becb8d");//204
     }
 
     @Test(expected = MailChimpErrorException.class)
-    public void removeSubscriberList_nonExistingId_removed(){
-        mailChimpClient.removeSubscriberList("nonExistingId");
+    public void removeList_nonExistingId_removed(){
+        mailChimpClient.removeList("nonExistingId");
     }
 
     @Test
