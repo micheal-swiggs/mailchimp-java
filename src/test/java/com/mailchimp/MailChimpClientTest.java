@@ -3,9 +3,11 @@ package com.mailchimp;
 import com.mailchimp.domain.Batch;
 import com.mailchimp.domain.Batches;
 import com.mailchimp.domain.CampaignDefaults;
+import com.mailchimp.domain.ListMergeField;
 import com.mailchimp.domain.ListMergeFields;
 import com.mailchimp.domain.Member;
 import com.mailchimp.domain.Members;
+import com.mailchimp.domain.MergeType;
 import com.mailchimp.domain.Root;
 import com.mailchimp.domain.SearchMembers;
 import com.mailchimp.domain.Segment;
@@ -129,6 +131,8 @@ public class MailChimpClientTest {
                 .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9.delete.txt"))
                 //list merge-field
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields.post.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields/3", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields/3/delete.txt"))
                 //list segment
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381.txt"))
@@ -351,8 +355,22 @@ public class MailChimpClientTest {
         assertEquals(2, listMergeFields.getMergeFields().size());
     }
 
-    //TODO: createMergeField
-    //TODO: removeListMergeField
+    @Test
+    public void createMergeField_valid_createMergeField(){
+        ListMergeField listMergeField = new ListMergeField();
+        listMergeField.setName("FAVORITEJOKE");
+        listMergeField.setType(MergeType.Text);
+        ListMergeField createdListMergeField = mailChimpClient.createMergeField("57afe96172", listMergeField);
+
+        assertEquals("57afe96172", createdListMergeField.getListId());
+        assertEquals("FAVORITEJOKE", createdListMergeField.getName());
+        assertEquals(MergeType.Text, createdListMergeField.getType());
+    }
+
+    @Test
+    public void removeListMergeField_existingMergeId_removed(){
+        mailChimpClient.removeListMergeField("57afe96172", "3");
+    }
 
     @Test
     public void getSegments_nonExistingListId_isNull(){
@@ -385,7 +403,7 @@ public class MailChimpClientTest {
         assertEquals("57afe96172", segment.getListId());
         assertEquals(49381, segment.getId().intValue());
     }
-
+    
     //TODO: createSegment
     //TODO: modifySegment
     //TODO: removeSegment

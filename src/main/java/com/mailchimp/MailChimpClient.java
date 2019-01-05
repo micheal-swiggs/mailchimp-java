@@ -61,7 +61,7 @@ public interface MailChimpClient {
     @RequestLine("POST /3.0/lists/{list-id}/merge-fields")
     ListMergeField createMergeField(@Param("list-id") String listId, ListMergeField mergeField);
 
-    @RequestLine("DELETE /lists/{list-id}/merge-fields/{merge-id}")
+    @RequestLine("DELETE /3.0/lists/{list-id}/merge-fields/{merge-id}")
     void removeListMergeField(@Param("list-id") String listId, @Param("merge-id") String mergeId);
 
     @RequestLine("POST /3.0/lists/{list-id}/segments")

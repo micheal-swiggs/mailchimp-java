@@ -20,4 +20,7 @@ public class ListMergeField {
 
     @JsonProperty
     private MergeType type;
+
+    @JsonProperty("list_id")
+    private String listId;
 }

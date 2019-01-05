@@ -1,0 +1,52 @@
+HTTP/1.1 200 OK
+Server: nginx
+Content-Type: application/json; charset=utf-8
+Content-Length: 992
+Vary: Accept-Encoding
+X-Request-Id: bd7aa329-e233-4679-a854-15466373df22
+Link: <https://api.mailchimp.com/schema/3.0/Lists/MergeFields/Instance.json>; rel="describedBy"
+Date: Wed, 16 Sep 2015 21:03:36 GMT
+Connection: keep-alive
+
+
+{
+  "merge_id": 3,
+  "tag": "MMERGE3",
+  "name": "FAVORITEJOKE",
+  "type": "text",
+  "required": false,
+  "default_value": "",
+  "public": false,
+  "display_order": 6,
+  "options": {
+    "size": 25
+  },
+  "help_text": "",
+  "list_id": "57afe96172",
+  "_links": [
+    {
+      "rel": "self",
+      "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields/3",
+      "method": "GET",
+      "targetSchema": "https://api.mailchimp.com/schema/3.0/Lists/MergeFields/Instance.json"
+    },
+    {
+      "rel": "parent",
+      "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields",
+      "method": "GET",
+      "targetSchema": "https://api.mailchimp.com/schema/3.0/Lists/MergeFields/Collection.json",
+      "schema": "https://api.mailchimp.com/schema/3.0/CollectionLinks/Lists/MergeFields.json"
+    },
+    {
+      "rel": "update",
+      "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields/3",
+      "method": "PATCH",
+      "schema": "https://api.mailchimp.com/schema/3.0/Lists/MergeFields/Instance.json"
+    },
+    {
+      "rel": "delete",
+      "href": "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields/3",
+      "method": "DELETE"
+    }
+  ]
+}
