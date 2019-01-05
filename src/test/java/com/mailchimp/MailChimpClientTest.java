@@ -313,7 +313,7 @@ public class MailChimpClientTest {
 
     @Test
     public void getListMembers_firstPage_filledLists(){
-        Members members = mailChimpClient.getListMembers("57afe96172", 0, 3);
+        Members members = mailChimpClient.getListMembers("57afe96172", new Page(0, 3));
         assertEquals("57afe96172", members.getListId());
         assertEquals(3, members.getMembers().size());
     }
@@ -386,13 +386,13 @@ public class MailChimpClientTest {
 
     @Test
     public void getBatches_Offset0_filledBatchList(){
-        Batches batches = mailChimpClient.getBatches(0, 1);
+        Batches batches = mailChimpClient.getBatches( new Page(0, 1));
         assertEquals(1, batches.getBatches().size());
     }
 
     @Test
     public void getBatches_nonExistingPage_emptyList(){
-        Batches batches = mailChimpClient.getBatches(1, 1);
+        Batches batches = mailChimpClient.getBatches(new Page(1, 1));
         assertEquals(0, batches.getBatches().size());
     }
 

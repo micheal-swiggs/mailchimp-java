@@ -2,6 +2,7 @@ package com.mailchimp;
 
 import com.mailchimp.domain.*;
 import feign.Param;
+import feign.QueryMap;
 import feign.RequestLine;
 
 /**
@@ -53,11 +54,11 @@ public interface MailChimpClient {
     @RequestLine("GET /3.0/lists/{list-id}/members")
     Members getListMembers(@Param("list-id") String listId);
 
-    @RequestLine("GET /3.0/lists/{list-id}/members?offset={offset}&count={count}")
-    Members getListMembers(@Param("list-id") String listId, @Param("offset") Integer offset, @Param("count") Integer count);
+    @RequestLine("GET /3.0/lists/{list-id}/members")
+    Members getListMembers(@Param("list-id") String listId, @QueryMap Page page);
 
-    @RequestLine("GET /3.0/lists/{list-id}/members?offset={offset}&count={count}&status={status}")
-    Members getListMembersByStatus(@Param("list-id") String listId, @Param("offset") Integer offset, @Param("count") Integer count, @Param(value = "status", expander = StatusToLower.class) SubscribeStatus status);
+    @RequestLine("GET /3.0/lists/{list-id}/members?status={status}")
+    Members getListMembersByStatus(@Param("list-id") String listId, @Param(value = "status", expander = StatusToLower.class) SubscribeStatus status, @QueryMap Page page);
 
     @RequestLine("GET /3.0/lists/{list-id}/merge-fields")
     ListMergeFields getListMergeFields(@Param("list-id") String listId);
@@ -89,8 +90,8 @@ public interface MailChimpClient {
     @RequestLine("GET /3.0/batches/{batch-id}")
     Batch getBatch(@Param("batch-id") String batchId);
 
-    @RequestLine("GET /3.0/batches?offset={offset}&count={count}")
-    Batches getBatches(@Param("offset") Integer offset, @Param("count") Integer count);
+    @RequestLine("GET /3.0/batches")
+    Batches getBatches(@QueryMap Page page);
 
     @RequestLine("DELETE /3.0/batches/{batch-id}")
     void removeBatch(@Param("batch-id") String batchId);
