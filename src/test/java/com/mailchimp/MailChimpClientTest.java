@@ -11,6 +11,9 @@ import com.mailchimp.domain.MergeType;
 import com.mailchimp.domain.Root;
 import com.mailchimp.domain.SearchMembers;
 import com.mailchimp.domain.Segment;
+import com.mailchimp.domain.SegmentCreate;
+import com.mailchimp.domain.SegmentModified;
+import com.mailchimp.domain.SegmentModify;
 import com.mailchimp.domain.Segments;
 import com.mailchimp.domain.SubscribeStatus;
 import com.mailchimp.domain.List;
@@ -136,6 +139,9 @@ public class MailChimpClientTest {
                 //list segment
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments/post.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/3da7c56ccb/segments/11281", generateMockResponseByResource("3.0/lists/3da7c56ccb/segments/11281/post.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/205d96e6b4/segments/445", generateMockResponseByResource("3.0/lists/205d96e6b4/segments/445/delete.txt"))
                 //batch
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches/8b2428d747", generateMockResponseByResource("3.0/batches/8b2428d747.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches?offset=0&count=1", generateMockResponseByResource("3.0/batches?offset=0&count=1.txt"))
@@ -403,10 +409,36 @@ public class MailChimpClientTest {
         assertEquals("57afe96172", segment.getListId());
         assertEquals(49381, segment.getId().intValue());
     }
-    
-    //TODO: createSegment
-    //TODO: modifySegment
-    //TODO: removeSegment
+
+    @Test
+    public void createSegment_validListIdAndSegment_createdSegment(){
+        SegmentCreate segment = new SegmentCreate();
+        segment.setName("The jokes that didn't quite make it.");
+
+        Segment createdSegment = mailChimpClient.createSegment("57afe96172", segment);
+
+        assertEquals("57afe96172", createdSegment.getListId());
+        assertEquals("The jokes that didn't quite make it.", createdSegment.getName());
+        assertNotNull(createdSegment.getCreatedAt());
+        assertNotNull(createdSegment.getUpdatedAt());
+    }
+
+    @Test
+    public void modifySegment_existingSegmentId_updatedSegment(){
+        SegmentModify segment = new SegmentModify();
+        segment.setMembersToAdd(Arrays.asList("freddie@mailchimp.com", "freddie@freddiesjokes.com"));
+        segment.setMembersToRemove(Arrays.asList("freddie@gmail.com", "freddie@yahoo.com", "freddie@hotmail.com"));
+
+        SegmentModified segmentModified = mailChimpClient.modifySegment("3da7c56ccb", 11281, segment);
+
+        assertEquals(2, segmentModified.getTotalAdded().intValue());
+        assertEquals(3, segmentModified.getTotalRemoved().intValue());
+    }
+
+    @Test
+    public void removeSegment_existingSegmentId_removedSegment(){
+        mailChimpClient.removeSegment("205d96e6b4", 445);
+    }
 
     @Test
     public void getBatch_nonExistingBatchId_isNull(){
@@ -469,4 +501,5 @@ public class MailChimpClientTest {
 
     //TODO: lists responses as BaseQuery<T> response with page info
     //TODO: add method to get next paged response
+    //TODO: tests that should throw an error
 }

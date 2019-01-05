@@ -1,0 +1,7 @@
+HTTP/1.1 204 No Content
+Server: nginx
+Date: Thu, 12 May 2016 14:05:04 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 0
+Connection: keep-alive
+X-Request-Id: 1da966ab-8614-4a57-bbb3-1516815828ca
