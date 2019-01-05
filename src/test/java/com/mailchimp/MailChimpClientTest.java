@@ -3,11 +3,13 @@ package com.mailchimp;
 import com.mailchimp.domain.Batch;
 import com.mailchimp.domain.Batches;
 import com.mailchimp.domain.CampaignDefaults;
+import com.mailchimp.domain.CreateBatch;
 import com.mailchimp.domain.ListMergeField;
 import com.mailchimp.domain.ListMergeFields;
 import com.mailchimp.domain.Member;
 import com.mailchimp.domain.Members;
 import com.mailchimp.domain.MergeType;
+import com.mailchimp.domain.Operation;
 import com.mailchimp.domain.Root;
 import com.mailchimp.domain.SearchMembers;
 import com.mailchimp.domain.Segment;
@@ -27,6 +29,7 @@ import feign.mock.MockClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -146,6 +149,8 @@ public class MailChimpClientTest {
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches/8b2428d747", generateMockResponseByResource("3.0/batches/8b2428d747.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches?offset=0&count=1", generateMockResponseByResource("3.0/batches?offset=0&count=1.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches?offset=1&count=1", generateMockResponseByResource("3.0/batches?offset=1&count=1.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/batches", generateMockResponseByResource("3.0/batches/post.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/batches/1", generateMockResponseByResource("3.0/batches/1/delete.txt"))
                 //searcg-members
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members", generateMockResponseByResource("3.0/400.txt"))
                 .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@", generateMockResponseByResource("3.0/search-members?query=freddie@.txt"))
@@ -472,8 +477,38 @@ public class MailChimpClientTest {
         assertEquals(0, batches.getBatches().size());
     }
 
-    //TODO: createBatch
-    //TODO: removeBatch
+    @Test
+    public void createBatch_validBatch_createdBatch(){
+        CreateBatch<Member> batch = new CreateBatch<Member>();
+        java.util.List<Operation<Member>> operations = new ArrayList<>();
+        operations.add(new Operation<Member>("POST","lists/624ea08019/members", Member.builder()
+                .emailAddress("freddie@mailchimp.com")
+                .status(SubscribeStatus.subscribed)
+                .build()));
+        operations.add(new Operation<Member>("POST","lists/624ea08019/members", Member.builder()
+                .emailAddress("freddy@mailchimp.com")
+                .status(SubscribeStatus.subscribed)
+                .build()));
+        operations.add(new Operation<Member>("POST","lists/624ea08019/members", Member.builder()
+                .emailAddress("fred@mailchimp.com")
+                .status(SubscribeStatus.subscribed)
+                .build()));
+        operations.add(new Operation<Member>("POST","lists/624ea08019/members", Member.builder()
+                .emailAddress("frederick@mailchimp.com")
+                .status(SubscribeStatus.subscribed)
+                .build()));
+        batch.setOperations(operations);
+
+        Batch createdBatch = mailChimpClient.createBatch(batch);
+
+        assertEquals("pending", createdBatch.getStatus());
+        assertEquals(0, createdBatch.getFinishedOperations().intValue());
+    }
+
+    @Test
+    public void removeBatch_existingBatchId_batchStopped(){
+        mailChimpClient.removeBatch("1");
+    }
 
     @Test(expected = MailChimpErrorException.class)
     public void searchMembers_emptyQuery_error(){
@@ -499,7 +534,9 @@ public class MailChimpClientTest {
         assertEquals("urist.mcvankab+6@freddiesjokes.com", searchMembers.getFullSearch().getMembers().get(0).getEmailAddress());
     }
 
-    //TODO: lists responses as BaseQuery<T> response with page info
+    //TODO: tests that should throw an error, like 404 on adding member to list when list does not exist
+    //TODO: implement more tests for error situations
+    //TODO: implement more query parameters
+    //TODO: implement paged results
     //TODO: add method to get next paged response
-    //TODO: tests that should throw an error
 }
