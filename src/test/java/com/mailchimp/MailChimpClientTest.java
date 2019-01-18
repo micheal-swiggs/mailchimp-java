@@ -52,8 +52,6 @@ import static org.junit.Assert.assertNull;
  */
 public class MailChimpClientTest {
 
-    private String AUTHORIZATION_HEADER_VALUE = "Basic " + Base64.encodeBase64String("anystring:apikey".getBytes());
-
     private MockClient mockClient;
     private MailChimpClient mailChimpClient;
 

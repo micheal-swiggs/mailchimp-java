@@ -21,7 +21,7 @@ public class ListMembersQuery {
     private SubscribeStatus status;
 
     public static ListMembersQuery all(){
-        return new ListMembersQuery(null, null, null);
+        return new ListMembersQuery();
     }
 
     public static ListMembersQuery firstPage(){
