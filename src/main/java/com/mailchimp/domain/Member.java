@@ -32,7 +32,19 @@ import org.apache.commons.codec.binary.Hex;
 public class Member {
 
     public static enum EmailType {
-        html, text
+        @JsonProperty("html")
+        Html,
+        @JsonProperty("text")
+        Text;
+
+        /**
+         * For correct serializing when using the enum in the query.
+         * @return lowercased value
+         */
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
     }
 
     public static class SubscriberStats {
@@ -175,11 +187,7 @@ public class Member {
         }
     }
 
-    public static String getMergefieldFname() {
-        return MERGEFIELD_FNAME;
-    }
-
-    public static String getMergefieldLname() {
-        return MERGEFIELD_LNAME;
+    public void putMergeField(String name, String value){
+        mergeFields.put(name, value);
     }
 }

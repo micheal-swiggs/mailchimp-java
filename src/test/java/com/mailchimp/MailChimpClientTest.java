@@ -288,7 +288,7 @@ public class MailChimpClientTest {
     public void createListMember_validListIdAndMember_createdListMember(){
         Member member = Member.builder()
                 .emailAddress("urist.mcvankab+3@freddiesjokes.com")
-                .status(SubscribeStatus.subscribed)
+                .status(SubscribeStatus.Subscribed)
                 //.tags(Arrays.asList(new String[] { "a tag", "another tag" }))
                 .build();
 
@@ -296,7 +296,7 @@ public class MailChimpClientTest {
 
         assertNotNull(createdMember.getId());
         assertEquals("urist.mcvankab+3@freddiesjokes.com", createdMember.getEmailAddress());
-        assertEquals(SubscribeStatus.subscribed, createdMember.getStatus());
+        assertEquals(SubscribeStatus.Subscribed, createdMember.getStatus());
         //assertEquals(2, createdMember.getTagsCount());
         assertEquals("198.2.191.34", createdMember.getIpOpt());
         assertNotNull(createdMember.getTimestampOpt());
@@ -307,7 +307,7 @@ public class MailChimpClientTest {
     public void createListMember_nonExistingId_isNull(){
         Member member = Member.builder()
                 .emailAddress("urist.mcvankab+3@freddiesjokes.com")
-                .status(SubscribeStatus.subscribed)
+                .status(SubscribeStatus.Subscribed)
                 //.tags(Arrays.asList(new String[] { "a tag", "another tag" }))
                 .build();
 
@@ -318,9 +318,9 @@ public class MailChimpClientTest {
     @Test
     public void updateListMember_validListIdAndMember_updatedListMember(){
         Member member = mailChimpClient.getListMember("57afe96172", "852aaa9532cb36adfb5e9fef7a4206a9");
-        member.setStatus(SubscribeStatus.unsubscribed);
+        member.setStatus(SubscribeStatus.Unsubscribed);
         Member updatedMember = mailChimpClient.updateListMember(member.getListId(), member.getSubscriberHash(), member);
-        assertEquals(SubscribeStatus.unsubscribed, updatedMember.getStatus());
+        assertEquals(SubscribeStatus.Unsubscribed, updatedMember.getStatus());
     }
 
     @Test
@@ -344,11 +344,11 @@ public class MailChimpClientTest {
     @Test
     public void getListMembers_withStatusEqSubscribed_listWithUnsubscribed(){
         ListMembersQuery query = ListMembersQuery.builder()
-                .status(SubscribeStatus.subscribed)
+                .status(SubscribeStatus.Subscribed)
                 .build();
         Members members = mailChimpClient.getListMembers("57afe96172", query);
         assertEquals("57afe96172", members.getListId());
-        assertEquals(SubscribeStatus.subscribed, members.getMembers().get(0).getStatus());
+        assertEquals(SubscribeStatus.Subscribed, members.getMembers().get(0).getStatus());
     }
 
     @Test
@@ -481,19 +481,19 @@ public class MailChimpClientTest {
         java.util.List<Operation<Member>> operations = new ArrayList<>();
         operations.add(new Operation<Member>("POST","lists/624ea08019/members", Member.builder()
                 .emailAddress("freddie@mailchimp.com")
-                .status(SubscribeStatus.subscribed)
+                .status(SubscribeStatus.Subscribed)
                 .build()));
         operations.add(new Operation<Member>("POST","lists/624ea08019/members", Member.builder()
                 .emailAddress("freddy@mailchimp.com")
-                .status(SubscribeStatus.subscribed)
+                .status(SubscribeStatus.Subscribed)
                 .build()));
         operations.add(new Operation<Member>("POST","lists/624ea08019/members", Member.builder()
                 .emailAddress("fred@mailchimp.com")
-                .status(SubscribeStatus.subscribed)
+                .status(SubscribeStatus.Subscribed)
                 .build()));
         operations.add(new Operation<Member>("POST","lists/624ea08019/members", Member.builder()
                 .emailAddress("frederick@mailchimp.com")
-                .status(SubscribeStatus.subscribed)
+                .status(SubscribeStatus.Subscribed)
                 .build()));
         batch.setOperations(operations);
 
