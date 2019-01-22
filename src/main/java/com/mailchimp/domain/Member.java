@@ -1,8 +1,6 @@
 package com.mailchimp.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.mailchimp.jackson.MailChimpZonedDateTimeDeserializer;
@@ -44,6 +42,15 @@ public class Member {
         @Override
         public String toString() {
             return name().toLowerCase();
+        }
+
+        /**
+         * for deserializing older version of jackson < 2.0
+         * @return lowercased string of the enum
+         */
+        @JsonValue
+        public String value(){
+            return toString();
         }
     }
 
