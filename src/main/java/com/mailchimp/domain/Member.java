@@ -30,28 +30,8 @@ import org.apache.commons.codec.binary.Hex;
 public class Member {
 
     public static enum EmailType {
-        @JsonProperty("html")
-        Html,
-        @JsonProperty("text")
-        Text;
-
-        /**
-         * For correct serializing when using the enum in the query.
-         * @return lowercased value
-         */
-        @Override
-        public String toString() {
-            return name().toLowerCase();
-        }
-
-        /**
-         * for deserializing older version of jackson < 2.0
-         * @return lowercased string of the enum
-         */
-        @JsonValue
-        public String value(){
-            return toString();
-        }
+        html,
+        text;
     }
 
     public static class SubscriberStats {
