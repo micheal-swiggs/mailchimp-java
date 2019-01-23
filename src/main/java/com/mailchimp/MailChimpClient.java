@@ -16,11 +16,17 @@ public interface MailChimpClient {
     /**
      * API Root
      *
-     * @return
+     * @return root info about the account
      */
     @RequestLine("GET /3.0/")
     Root getRoot();
 
+    /**
+     * Gets member from list by subscriberHash, or throws exception when the user is not in the list
+     * @param listId if of the list
+     * @param subscriberHash md5 hash by email {@link Member#getSubscriberHash(String)}
+     * @return member
+     */
     @RequestLine("GET /3.0/lists/{list-id}/members/{subscriber-hash}")
     Member getListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
 
@@ -36,7 +42,7 @@ public interface MailChimpClient {
     /**
      * Create a new list in your MailChimp account.
      *
-     * @param list
+     * @param list to create
      *
      * @return created list
      */

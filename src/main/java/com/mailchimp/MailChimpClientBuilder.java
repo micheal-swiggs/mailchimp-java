@@ -59,7 +59,6 @@ public class MailChimpClientBuilder {
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
                 .errorDecoder(new MailChimpErrorDecoder())
-                .decode404()//TODO: replace this, because this will also decode when adding member to a non-existend listId
                 .requestInterceptor(authRequestInterceptor)
                 .client(client)
                 .logger(logger)

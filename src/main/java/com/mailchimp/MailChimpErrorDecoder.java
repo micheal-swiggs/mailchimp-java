@@ -7,6 +7,7 @@ package com.mailchimp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mailchimp.domain.MailChimpError;
+import feign.FeignException;
 import feign.Response;
 import feign.RetryableException;
 import feign.codec.ErrorDecoder;
@@ -43,8 +44,8 @@ public class MailChimpErrorDecoder implements ErrorDecoder {
             try {
                 error = om.readValue(response.body().asInputStream(), MailChimpError.class);
                 return new MailChimpErrorException(response.status(), response.reason(), error);
-            } catch (IOException ex) {
-                return new RuntimeException("json serialization of mailchimp error", ex);
+            } catch (Exception ex) {
+                return FeignException.errorStatus(methodKey, response);
             }
         } else if (response.status() == 503) { // 503: Service (temporary) unavailable
             Date retryAfter = new RetryAfterDecoder().apply(firstOrNull(response.headers(), RETRY_AFTER));
