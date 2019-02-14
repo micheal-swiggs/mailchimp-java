@@ -1,12 +1,14 @@
 
 
-This is a Java wrapper around the MailChimp API. Checkout `Example.groovy` for a simple demo.
+This is a Java wrapper around the MailChimp API.
 
-##### Running the Demo
+##### Example code for using the client
 
-    ./gradlew -b dev.gradle run
-
-In `Example.groovy` you need to set your credentials and a mailchimp list id.
+    MailChimpClient mailChimpClient = MailChimpClient.builder()
+      .withApiBase("us1")
+      .withBasicAuthentication("abc")
+      .build();
+    List list = mailChimpClient.getList("123");
 
 ## Maven / Gradle
 
