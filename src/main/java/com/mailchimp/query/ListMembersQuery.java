@@ -18,7 +18,6 @@ public class ListMembersQuery {
     private Integer count;
 
     @Getter
-
     private SubscribeStatus status;
 
     public static ListMembersQuery all(){
