@@ -1,5 +1,6 @@
 package com.mailchimp;
 
+import com.mailchimp.auth.OAuth2RequestInterceptor;
 import com.mailchimp.jackson.JacksonDecoder;
 import com.mailchimp.jackson.JacksonEncoder;
 import feign.Client;
@@ -21,7 +22,7 @@ public class MailChimpClientBuilder {
     private Logger logger = new Logger.NoOpLogger();
 
     //mailchimp specific options
-    private String apiKey;
+    private RequestInterceptor authRequestInterceptor;
     private String apiBase;
 
     public MailChimpClientBuilder withClient(Client client){
@@ -40,7 +41,12 @@ public class MailChimpClientBuilder {
     }
 
     public MailChimpClientBuilder withBasicAuthentication(String apiKey){
-        this.apiKey = apiKey;
+        this.authRequestInterceptor = new BasicAuthRequestInterceptor("anyString", apiKey);
+        return this;
+    }
+
+    public MailChimpClientBuilder withOAUth2Authentication(String accessToken){
+        this.authRequestInterceptor = new OAuth2RequestInterceptor(accessToken);
         return this;
     }
 
@@ -51,9 +57,7 @@ public class MailChimpClientBuilder {
 
     public MailChimpClient build(){
         Objects.requireNonNull(apiBase, "apiBase is required");
-        Objects.requireNonNull(apiKey, "apiKey is required");
-
-        RequestInterceptor authRequestInterceptor = new BasicAuthRequestInterceptor("anyString", apiKey);
+        Objects.requireNonNull(authRequestInterceptor, "authRequestInterceptor is required");
 
         MailChimpClient mailChimp = Feign.builder()
                 .decoder(new JacksonDecoder())
