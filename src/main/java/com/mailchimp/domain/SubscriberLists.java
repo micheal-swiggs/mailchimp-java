@@ -9,17 +9,17 @@ import java.util.List;
 public class SubscriberLists {
 
     @JsonProperty("lists")
-    private List<SubscriberList> subscriberLists;
+    private List<SubscriberList> lists;
 
     @JsonProperty("total_items")
     private Integer totalItems;
 
-    public List<SubscriberList> getSubscriberLists() {
-        return subscriberLists;
+    public List<SubscriberList> getLists() {
+        return lists;
     }
 
-    public void setSubscriberLists(List<SubscriberList> subscriberLists) {
-        this.subscriberLists = subscriberLists;
+    public void setLists(List<SubscriberList> lists) {
+        this.lists = lists;
     }
 
     public Integer getTotalItems() {
