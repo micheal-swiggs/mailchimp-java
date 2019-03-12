@@ -1,17 +1,14 @@
-apply plugin: 'java'
-apply plugin: 'maven'
-
-group = "com.mailchimp"
-version = "0.5.4"
-
-compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+plugins {
+    id 'java'
 }
+
+group 'com.mailchimp'
+version '0.5.4'
+
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    maven { url "http://repo.spring.io/libs-milestone" }
 }
 
 dependencies {
@@ -23,10 +20,4 @@ dependencies {
 
     testCompile('junit:junit:4.12')
     testCompile group: 'io.github.openfeign', name: 'feign-mock', version: '10.1.0'
-}
-
-install {
-    repositories.mavenInstaller {
-        pom.artifactId = "mailchimp-api"
-    }
 }
