@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class SubscriberLists {
 
-    @JsonProperty("subscriberLists")
+    @JsonProperty("lists")
     private List<SubscriberList> subscriberLists;
 
     @JsonProperty("total_items")
