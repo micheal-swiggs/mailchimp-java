@@ -45,7 +45,7 @@ public class MailChimpClientBuilder {
         return this;
     }
 
-    public MailChimpClientBuilder withOAUth2Authentication(String accessToken){
+    public MailChimpClientBuilder withOAuth2Authentication(String accessToken){
         this.authRequestInterceptor = new OAuth2RequestInterceptor(accessToken);
         return this;
     }

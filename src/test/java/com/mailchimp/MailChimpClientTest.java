@@ -1,25 +1,7 @@
 package com.mailchimp;
 
-import com.mailchimp.domain.Batch;
-import com.mailchimp.domain.Batches;
-import com.mailchimp.domain.CampaignDefaults;
-import com.mailchimp.domain.CreateBatch;
-import com.mailchimp.domain.ListMergeField;
-import com.mailchimp.domain.ListMergeFields;
-import com.mailchimp.domain.Member;
-import com.mailchimp.domain.Members;
-import com.mailchimp.domain.MergeType;
-import com.mailchimp.domain.Operation;
-import com.mailchimp.domain.Root;
-import com.mailchimp.domain.SearchMembers;
-import com.mailchimp.domain.Segment;
-import com.mailchimp.domain.SegmentCreate;
-import com.mailchimp.domain.SegmentModified;
-import com.mailchimp.domain.SegmentModify;
-import com.mailchimp.domain.Segments;
-import com.mailchimp.domain.SubscribeStatus;
-import com.mailchimp.domain.List;
-import com.mailchimp.domain.Lists;
+import com.mailchimp.domain.*;
+import com.mailchimp.domain.SubscriberList;
 import com.mailchimp.query.BatchesQuery;
 import com.mailchimp.query.ListMembersQuery;
 import com.mailchimp.query.ListsQuery;
@@ -35,15 +17,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link MailChimpClient}, uses feign-mock to mock responses.
@@ -196,8 +175,8 @@ public class MailChimpClientTest {
 
     @Test
     public void getList_existingListId_oneList() {
-        List list = mailChimpClient.getList("57afe96172");
-        assertEquals("57afe96172", list.getId());
+        SubscriberList subscriberList = mailChimpClient.getList("57afe96172");
+        assertEquals("57afe96172", subscriberList.getId());
     }
 
     @Test
@@ -206,9 +185,9 @@ public class MailChimpClientTest {
                 .offset(0)
                 .count(1)
                 .build();
-        Lists lists = mailChimpClient.getLists(query);
-        assertEquals(1, lists.getTotalItems().intValue());
-        assertEquals("57afe96172", lists.getLists().get(0).getId());
+        SubscriberLists subscriberLists = mailChimpClient.getLists(query);
+        assertEquals(1, subscriberLists.getTotalItems().intValue());
+        assertEquals("57afe96172", subscriberLists.getSubscriberLists().get(0).getId());
     }
 
     @Test
@@ -217,15 +196,15 @@ public class MailChimpClientTest {
                 .offset(1)
                 .count(1)
                 .build();
-        Lists lists = mailChimpClient.getLists(query);
-        assertEquals(0, lists.getLists().size());
+        SubscriberLists subscriberLists = mailChimpClient.getLists(query);
+        assertEquals(0, subscriberLists.getSubscriberLists().size());
     }
 
     @Test
     public void createList_valid_createdList(){
-        List list = new List();
-        list.setName("Freddie's Favorite Hats");
-        List.Contact contact = com.mailchimp.domain.List.Contact.builder()
+        SubscriberList subscriberList = new SubscriberList();
+        subscriberList.setName("Freddie's Favorite Hats");
+        SubscriberList.Contact contact = SubscriberList.Contact.builder()
                 .company("Mailchimp")
                 .address1("675 Ponce De Leon Ave NE")
                 .address2("Suite 5000")
@@ -235,32 +214,32 @@ public class MailChimpClientTest {
                 .country("US")
                 .phone("")
                 .build();
-        list.setContact(contact);
-        list.setPermissionReminder("You're receiving this email because you signed up for updates about Freddie's newest hats.");
+        subscriberList.setContact(contact);
+        subscriberList.setPermissionReminder("You're receiving this email because you signed up for updates about Freddie's newest hats.");
         CampaignDefaults campaignDefaults = CampaignDefaults.builder()
                 .fromName("Freddie")
                 .fromEmail("freddie@freddiehats.com")
                 .subject("")
                 .language("en")
                 .build();
-        list.setCampaignDefaults(campaignDefaults);
-        list.setEmailTypeOption(true);
+        subscriberList.setCampaignDefaults(campaignDefaults);
+        subscriberList.setEmailTypeOption(true);
 
         //create
-        list = mailChimpClient.createList(list);
+        subscriberList = mailChimpClient.createList(subscriberList);
 
         //check
-        assertNotNull(list.getId());
-        assertEquals("Freddie's Favorite Hats", list.getName());
-        assertEquals("Atlanta", list.getContact().getCity());
-        assertEquals("Freddie", list.getCampaignDefaults().getFromName());
-        assertNotNull(list.getDateCreated());
-        assertEquals(0, list.getListRating().intValue());
-        assertNotNull(list.getSubscribeUrlShort());
-        assertNotNull(list.getSubscribeUrlLong());
-        assertNotNull(list.getBeamerAddress());
-        assertEquals(com.mailchimp.domain.List.Visibility.pub, list.getVisibility());
-        assertEquals(0, list.getStats().getMemberCount().intValue());
+        assertNotNull(subscriberList.getId());
+        assertEquals("Freddie's Favorite Hats", subscriberList.getName());
+        assertEquals("Atlanta", subscriberList.getContact().getCity());
+        assertEquals("Freddie", subscriberList.getCampaignDefaults().getFromName());
+        assertNotNull(subscriberList.getDateCreated());
+        assertEquals(0, subscriberList.getListRating().intValue());
+        assertNotNull(subscriberList.getSubscribeUrlShort());
+        assertNotNull(subscriberList.getSubscribeUrlLong());
+        assertNotNull(subscriberList.getBeamerAddress());
+        assertEquals(SubscriberList.Visibility.pub, subscriberList.getVisibility());
+        assertEquals(0, subscriberList.getStats().getMemberCount().intValue());
     }
 
     @Test

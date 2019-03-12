@@ -61,12 +61,12 @@ public interface MailChimpClient {
     void removeListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
 
     /**
-     * Create list.
-     * @param list to create
-     * @return created list
+     * Create subscriberList.
+     * @param subscriberList to create
+     * @return created subscriberList
      */
     @RequestLine("POST /3.0/lists")
-    List createList(List list);
+    SubscriberList createList(SubscriberList subscriberList);
 
     /**
      * Removes list.
@@ -83,7 +83,7 @@ public interface MailChimpClient {
      * @throws MailChimpErrorException when listId was not found
      */
     @RequestLine("GET /3.0/lists/{list-id}")
-    List getList(@Param("list-id") String listId);
+    SubscriberList getList(@Param("list-id") String listId);
 
     /**
      * Gets lists by query.
@@ -91,7 +91,7 @@ public interface MailChimpClient {
      * @return filtered list of lists
      */
     @RequestLine("GET /3.0/lists")
-    Lists getLists(@QueryMap ListsQuery query);
+    SubscriberLists getLists(@QueryMap ListsQuery query);
 
     /**
      * Gets list members.

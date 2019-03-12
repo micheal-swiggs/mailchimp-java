@@ -8,7 +8,7 @@ This is a Java wrapper around the MailChimp API.
       .withApiBase("us1")
       .withBasicAuthentication("abc")
       .build();
-    List list = mailChimpClient.getList("123");
+    List subscriberList = mailChimpClient.getList("123");
 
 ## Maven / Gradle
 
