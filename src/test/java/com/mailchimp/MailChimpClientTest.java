@@ -187,7 +187,7 @@ public class MailChimpClientTest {
                 .build();
         SubscriberLists subscriberLists = mailChimpClient.getLists(query);
         assertEquals(1, subscriberLists.getTotalItems().intValue());
-        assertEquals("57afe96172", subscriberLists.getSubscriberLists().get(0).getId());
+        assertEquals("57afe96172", subscriberLists.getLists().get(0).getId());
     }
 
     @Test
@@ -197,7 +197,7 @@ public class MailChimpClientTest {
                 .count(1)
                 .build();
         SubscriberLists subscriberLists = mailChimpClient.getLists(query);
-        assertEquals(0, subscriberLists.getSubscriberLists().size());
+        assertEquals(0, subscriberLists.getLists().size());
     }
 
     @Test
