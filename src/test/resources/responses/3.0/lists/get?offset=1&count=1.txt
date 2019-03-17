@@ -1,0 +1,37 @@
+HTTP/1.1 200 OK
+Server: nginx
+Content-Type: application/json; charset=utf-8
+Vary: Accept-Encoding
+X-Request-Id: a4c491b5-2bd2-46b2-8b3f-e33e8c8bef04
+Link: <https://api.mailchimp.com/schema/3.0/Lists/Collection.json>; rel="describedBy"
+Date: Wed, 16 Sep 2015 14:42:17 GMT
+Content-Length: 17012
+Connection: keep-alive
+
+
+{
+    "lists": [],
+    "total_items": 5,
+    "_links": [
+        {
+            "rel": "self",
+            "href": "https://us12.api.mailchimp.com/3.0/lists",
+            "method": "GET",
+            "targetSchema": "https://us12.api.mailchimp.com/schema/3.0/Definitions/Lists/CollectionResponse.json",
+            "schema": "https://us12.api.mailchimp.com/schema/3.0/CollectionLinks/Lists.json"
+        },
+        {
+            "rel": "parent",
+            "href": "https://us12.api.mailchimp.com/3.0/",
+            "method": "GET",
+            "targetSchema": "https://us12.api.mailchimp.com/schema/3.0/Definitions/Root/Response.json"
+        },
+        {
+            "rel": "create",
+            "href": "https://us12.api.mailchimp.com/3.0/lists",
+            "method": "POST",
+            "targetSchema": "https://us12.api.mailchimp.com/schema/3.0/Definitions/Lists/Response.json",
+            "schema": "https://us12.api.mailchimp.com/schema/3.0/Definitions/Lists/POST.json"
+        }
+    ]
+}

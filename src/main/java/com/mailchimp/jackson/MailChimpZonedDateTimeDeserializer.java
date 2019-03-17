@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.mailchimp.MailChimpClient;
 import java.io.IOException;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -14,6 +16,8 @@ import java.time.format.DateTimeParseException;
  */
 public final class MailChimpZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
 
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
     @Override
     public ZonedDateTime deserialize(final JsonParser parser, final DeserializationContext context) throws IOException, JsonProcessingException {
         final String stringDate = parser.getText();
@@ -21,7 +25,7 @@ public final class MailChimpZonedDateTimeDeserializer extends JsonDeserializer<Z
             return null;
         }
         try {
-            ZonedDateTime date = ZonedDateTime.parse(stringDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+             ZonedDateTime date = ZonedDateTime.parse(stringDate, dateTimeFormatter);
             return date;
         } catch (DateTimeParseException ex) {
             //when format is incorrect set to null

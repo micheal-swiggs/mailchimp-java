@@ -1,1205 +1,518 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mailchimp;
 
-import com.mailchimp.domain.Member;
-import com.mailchimp.domain.Members;
-import com.mailchimp.domain.Root;
-import com.mailchimp.domain.SearchMembers;
-import com.mailchimp.domain.Segment;
-import com.mailchimp.domain.SegmentCreate;
-import com.mailchimp.domain.SegmentModified;
-import com.mailchimp.domain.SegmentModify;
-import com.mailchimp.domain.Segments;
-import com.mailchimp.domain.SubscribeStatus;
+import com.mailchimp.domain.*;
 import com.mailchimp.domain.SubscriberList;
-import com.mailchimp.domain.SubscriberLists;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.io.FileInputStream;
+import com.mailchimp.query.BatchesQuery;
+import com.mailchimp.query.ListMembersQuery;
+import com.mailchimp.query.ListsQuery;
+import feign.Response;
+import feign.mock.HttpMethod;
+import feign.mock.MockClient;
 import java.io.IOException;
-import java.time.ZonedDateTime;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Properties;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
- * Requires "test.properties" file in projects root to run the tests. <br>
- * The test.properties file must contain the following values:
- * <ul>
- * <li><b>apiKey</b>. Request on the mailchimp website under account > extras > API keys</li>
- * <li><b>apiBase</b>. Base to send the request to, this is contained in the apiKey after the dash (like "us12")</li>
- * <li><b>email</b>. Use as subscriber. Use a real email-address (preferable your own) because this use may receive some mails.</li>
- * </ul>
- * Do know that if you do not have a paid account that you maybe reach your request limit.
- *
- * @author stevensnoeijen, eamoralesl
+ * Unit tests for {@link MailChimpClient}, uses feign-mock to mock responses.
+ * The responses are saved in the resources/responses folder.
+ * These responses were copied from the mailchimp's documentation site, from the associated method's page his "Example response" block.
  */
-@RunWith(InSequenceRunner.class)
 public class MailChimpClientTest {
 
-    private static String listID;
-    private static Integer segmentID;
-    private final MailChimpClient mailChimpClient;
-    private final String email;
+    private MockClient mockClient;
+    private MailChimpClient mailChimpClient;
 
-    public MailChimpClientTest() throws IOException {
-        //load properties
-        Properties properties = new Properties();
-        properties.load(new FileInputStream("test.properties"));
-
-        String apiKey = properties.getProperty("apiKey");
-        String apiBase = properties.getProperty("apiBase");
-        email = properties.getProperty("email");
-
-        mailChimpClient = MailChimpFactory.createWithBasicAuth(apiKey, apiBase);
+    private static InputStream getResponseResourceAsStream(String name) {
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream("responses/" + name);
     }
 
-    public void throwMailChimpErrorException() throws MailChimpErrorException {
-        SubscriberList list = mailChimpClient.getList("123");
-        Assert.assertNull(list);
+    private static Response.Builder generateMockResponseByResource(String resourceName)
+            throws IOException {
+        InputStream is = getResponseResourceAsStream(resourceName);
+        String responseString = IOUtils.toString(is);
+
+        //parse responseString to status, headers and body
+        //status
+        String statusString = responseString.split("\n", 0)[0];
+        String statusCodeString = statusString.substring(statusString.indexOf(" ") + 1, statusString.indexOf(" ") + 4);
+        int statusCode = Integer.parseInt(statusCodeString);
+
+        Map<String, Collection<String>> headers;
+        String bodyString = null;
+
+        //headers
+        int split = responseString.indexOf("\n\n");
+        if(split == -1){
+            //has no body
+            String headersString = responseString.substring(responseString.indexOf("\n") + 1);
+            String[] headersStrings = headersString.split("\n");
+            headers = new HashMap<>();
+            for (String headerString : headersStrings) {
+                String headerName = headerString.split(": ")[0];
+                String headerValue = headerString.split(": ")[1];
+                String[] headerValues = headerValue.split("; ");
+                headers.put(headerName, Arrays.asList(headerValues));
+            }
+        }else{
+            //has body
+            String headersString = responseString.substring(responseString.indexOf("\n") + 1, split);
+            String[] headersStrings = headersString.split("\n");
+            headers = new HashMap<>();
+            for (String headerString : headersStrings) {
+                String headerName = headerString.split(": ")[0];
+                String headerValue = headerString.split(": ")[1];
+                String[] headerValues = headerValue.split("; ");
+                headers.put(headerName, Arrays.asList(headerValues));
+            }
+
+            //body
+            bodyString = responseString.substring(split + 3);
+        }
+
+        //create response
+        Response.Builder responseBuilder = Response.builder()
+                .status(statusCode)
+                .headers(headers);
+        if(bodyString != null) {
+            responseBuilder.body(bodyString, Charset.defaultCharset());
+        }
+
+        return responseBuilder;
     }
 
-    @Test
-    public void decode404() {
-        SubscriberList list = mailChimpClient.getList("123");
-        assertNull(list);
+    @Before
+    public void setup() throws IOException {
+        mockClient = new MockClient()
+                //root
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/", generateMockResponseByResource("3.0/root.txt"))
+                //list
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172", generateMockResponseByResource("3.0/lists/57afe96172/get.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/nonExistingList", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists?offset=0&count=1", generateMockResponseByResource("3.0/lists/get?offset=0&count=1.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists?offset=1&count=1", generateMockResponseByResource("3.0/lists/get?offset=1&count=1.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists", generateMockResponseByResource("3.0/lists/get.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/4ca5becb8d", generateMockResponseByResource("3.0/204.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/nonExistingId", generateMockResponseByResource("3.0/404.txt"))
+                //list member
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9/get.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/nonExistingListId/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/nonExistingSubscriberHash", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members", generateMockResponseByResource("3.0/lists/57afe96172/members/get.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/nonExistingId/members", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members?status=subscribed", generateMockResponseByResource("3.0/lists/57afe96172/members/get.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members", generateMockResponseByResource("3.0/lists/57afe96172/members/post.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/nonExistingId/members", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.PUT, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9/put.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9", generateMockResponseByResource("3.0/lists/57afe96172/members/852aaa9532cb36adfb5e9fef7a4206a9/delete.txt"))
+                //list merge-field
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields/get.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/nonExistingListId/merge-fields", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields/post.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/merge-fields/3", generateMockResponseByResource("3.0/lists/57afe96172/merge-fields/3/delete.txt"))
+                //list segment
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments/get.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/nonExistingListId/segments", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/49381", generateMockResponseByResource("3.0/lists/57afe96172/segments/49381/get.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/nonExistingListId/segments/49381", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments/0", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/57afe96172/segments", generateMockResponseByResource("3.0/lists/57afe96172/segments/post.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/lists/3da7c56ccb/segments/11281", generateMockResponseByResource("3.0/lists/3da7c56ccb/segments/11281/post.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/lists/205d96e6b4/segments/445", generateMockResponseByResource("3.0/lists/205d96e6b4/segments/445/delete.txt"))
+                //batch
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches/8b2428d747", generateMockResponseByResource("3.0/batches/8b2428d747/get.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches/nonExistingBatchId", generateMockResponseByResource("3.0/404.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches?offset=0&count=1", generateMockResponseByResource("3.0/batches/get?offset=0&count=1.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/batches?offset=1&count=1", generateMockResponseByResource("3.0/batches/get?offset=1&count=1.txt"))
+                .add(HttpMethod.POST, "https://usX.api.mailchimp.com/3.0/batches", generateMockResponseByResource("3.0/batches/post.txt"))
+                .add(HttpMethod.DELETE, "https://usX.api.mailchimp.com/3.0/batches/1", generateMockResponseByResource("3.0/batches/1/delete.txt"))
+                //searcg-members
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members", generateMockResponseByResource("3.0/400.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@", generateMockResponseByResource("3.0/search-members/get?query=freddie@.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@&list_id=1", generateMockResponseByResource("3.0/search-members/get?query=freddie@&list_id=1.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@", generateMockResponseByResource("3.0/search-members/get?query=freddie@.txt"))
+                .add(HttpMethod.GET, "https://usX.api.mailchimp.com/3.0/search-members?query=freddie@&list_id=57afe96172", generateMockResponseByResource("3.0/search-members/get?query=freddie@.txt"));
+
+        mailChimpClient = MailChimpClient.builder()
+                .withClient(mockClient)
+                .withApiBase("usX")
+                .withBasicAuthentication("apikey")
+                .build();
     }
 
-    @Test
-    @InSequence(1)
-    public void getRoot() {
-        Root account = mailChimpClient.getRoot();
-    }
-
-    /*
-     * @Test
-     * public void createAuthorizedApp() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getAuthorizedApps() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getAuthorizedApp() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getAutomations() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getAutomation() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void pauseAutomationMails() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void startAutomationMails() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getAutomationEmails() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getAutomationEmail() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void pauseAutomationEmail() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void startAutomationEmail() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void addAutomationEmailQueue() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getAutomationEmailQueue() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getAutomationEmailQueueSubscriber() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeAutomationSubscriber() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getAutomationSubscribers() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void startBatch() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getBatches() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getBatch() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeBatch() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createCampaignFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getCampaignFolders() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getCampaignFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateCampaignFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeCampaignFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getCampaigns() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void cancelCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void pauseCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void replicateCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void resumeCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void scheduleCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void sendCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void testCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void unscheduleCampaign() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getCampaignContent() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void setCampaignContent() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void addCampaignFeedback() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getCampaignFeedbacks() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getCampaignFeedback() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateCampaignFeedback() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeCampaignFeedback() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getCampaignSendChecklist() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getConversations() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getConversation() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createConversationMessage() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getConversationMessages() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getConversationMessage() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createECommerceStore() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStores() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStore() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateECommerceStore() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeECommerceStore() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createECommerceStoreCart() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createECommerceStoreCarts() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateECommerceStoreCart() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeECommerceStoreCart() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createECommerceStoreCartLine() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartLines() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartLine() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateECommerceStoreCartLine() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeECommerceStoreCartLine() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createECommerceStoreCartCustomer() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartCustomer() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartCustomers() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateECommerceStoreCartCustomer() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeECommerceStoreCartCustomer() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createECommerceStoreCartOrder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartOrders() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartOrder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateECommerceStoreCartOrder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeECommerceStoreCartOrder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createECommerceStoreCartOrderLine() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartOrderLines() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartOrderLine() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateECommerceStoreCartOrderLine() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeECommerceStoreCartOrderLine() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createECommerceStoreCartOrderProduct() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartOrderProducts() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartOrderProduct() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeECommerceStoreCartOrderProduct() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createECommerceStoreCartOrderProductVariant() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartOrderProductVariants() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getECommerceStoreCartOrderProductVariant() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateECommerceStoreCartOrderProductVariant() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeECommerceStoreCartOrderProductVariant() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void uploadFile() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getFilesInfo() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getFile() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateFile() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeFile() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getFoldersInfo() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getFolderInfo() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeFolder() {
-     * fail("Not yet implemented");
-     * } */
-    @Test
-    @InSequence(2)
-    public void createList() {
-        SubscriberList list = new SubscriberList();
-        list.setName("mailchimp-test");
-        list.getContact().setCompany("MailChimp test");
-        list.getContact().setAddress1("1386 Andy Street");
-        list.getContact().setCity("Springfield");
-        list.getContact().setState("South Dakota");
-        list.getContact().setZip("57062");
-        list.getContact().setCountry("US");
-        list.setPermissionReminder("MailChimp test");
-        list.getCampaignDefaults().setFromName("MailChimp test");
-        list.getCampaignDefaults().setFromEmail(email);
-        list.getCampaignDefaults().setSubject("");
-        list.getCampaignDefaults().setLanguage("en");
-        list.setEmailTypeOption(false);
-
-        list = mailChimpClient.createList(list);
-        assertNotNull(list);
-        listID = list.getId();
+    @After
+    public void tearDown() {
+        mockClient.verifyStatus();
     }
 
     @Test
-    @InSequence(3)
-    public void getList() {
-        SubscriberList list = mailChimpClient.getList(listID);
-        assertNotNull(list);
+    public void builder_default_returnsBuilder() {
+        MailChimpClientBuilder builder = MailChimpClient.builder();
+        assertNotNull(builder);
     }
 
     @Test
-    @InSequence(4)
-    public void getLists() {
-        SubscriberLists lists = mailChimpClient.getLists();
-        assertTrue(lists.getTotalItems() > 0);
-    }
-
-    @Test
-    @InSequence(5)
-    public void createListMemberSubscribed() {
-        Member member = new Member(email);
-        member.setEmailType(Member.EmailType.html);
-        member.setStatus(SubscribeStatus.SUBSCRIBED);
-        member.putMergeField("EMAIL", email);
-        member.putMergeField("MESSAGE", "some message");
-        member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
-
-        //test create
-        member = mailChimpClient.createListMember(listID, member);
-        assertNotNull(member.getId());
-        assertNotNull(member.getUniqueEmailId());
-    }
-
-    @Test
-    @InSequence(5)
-    public void createListMemberUnSubscribed() {
-        String emailAddress = email.replace("@", "+10@");
-        Member member = new Member(emailAddress);
-        member.setEmailType(Member.EmailType.html);
-        member.setStatus(SubscribeStatus.UNSUBSCRIBED);
-        member.putMergeField("EMAIL", emailAddress);
-        member.putMergeField("MESSAGE", "some message");
-        member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
-
-        //test create
-        member = mailChimpClient.createListMember(listID, member);
-        assertNotNull(member.getId());
-        assertNotNull(member.getUniqueEmailId());
-    }
-
-
-    @Test
-    @InSequence(5)
-    public void createListMemberCleaned() {
-        String emailAddress = email.replace("@", "+20@");
-        Member member = new Member(emailAddress);
-        member.setEmailType(Member.EmailType.html);
-        member.setStatus(SubscribeStatus.CLEANED);
-        member.putMergeField("EMAIL", emailAddress);
-        member.putMergeField("MESSAGE", "some message");
-        member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
-
-        //test create
-        member = mailChimpClient.createListMember(listID, member);
-        assertNotNull(member.getId());
-        assertNotNull(member.getUniqueEmailId());
-    }
-
-    @Test
-    @InSequence(5)
-    public void createListMemberPending() {
-        String emailAddress = email.replace("@", "+30@");
-        Member member = new Member(emailAddress);
-        member.setEmailType(Member.EmailType.html);
-        member.setStatus(SubscribeStatus.PENDING);
-        member.putMergeField("EMAIL", emailAddress);
-        member.putMergeField("MESSAGE", "some message");
-        member.setLanguage("nl");
-        member.setTimestampSignup(ZonedDateTime.now());
-
-        //test create
-        member = mailChimpClient.createListMember(listID, member);
-        assertNotNull(member.getId());
-        assertNotNull(member.getUniqueEmailId());
-    }
-
-    @Test
-    @InSequence(6)
-    public void getListMember() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
-        assertNotNull(member);
-    }
-
-    @Test
-    @InSequence(7)
-    public void getListMembers() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        Members members = mailChimpClient.getListMembers(listID);
-        assertEquals(4, members.getTotalItems().longValue());
-    }
-
-
-    @Test
-    @InSequence(7)
-    public void getListMembersByStatus() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        Members subscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.SUBSCRIBED);
-        assertEquals(1, subscribed.getTotalItems().longValue());
-        Members unSubscribed = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.UNSUBSCRIBED);
-        assertEquals(1, unSubscribed.getTotalItems().longValue());
-        Members cleaned = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.CLEANED);
-        assertEquals(1, cleaned.getTotalItems().longValue());
-        Members pending = mailChimpClient.getListMembersByStatus(listID, 0, 1, SubscribeStatus.PENDING);
-        assertEquals(1, pending.getTotalItems().longValue());
-    }
-
-    @Test
-    @InSequence(8)
-    public void updateListMember() {
-        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
-        member.putMergeField("FNAME", "test");
-        member = mailChimpClient.updateListMember(listID, member.getId(), member);
-        assertEquals("test", member.getMergeField("FNAME"));
-    }
-
-
-    /*
-     * @Test
-     * public void getListAbuseReports() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListAbuseReport() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListActivity() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListClients() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListGrowthHistories() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListGrowthHistory() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createListInterestCategory() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListInterestCategories() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListInterestCategory() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateListInterestCategory() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeListInterestCategory() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createListInterestCategoryInterest() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListInterestCategoriesInterest() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListInterestCategoryInterest() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateListInterestCategoryInterest() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeListInterestCategoryInterest() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListMemberActivity() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListMemberGoals() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createListMemberNote() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListMemberNotes() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListMemberNote() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateListMemberNote() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeListMemberNote() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createListMergeField() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListMergeFields() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListMergeField() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateListMergeField() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeListMergeField() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createListSegment() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListSegments() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListSegment() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateListSegment() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeListSegment() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createListSegmentMember() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListSegmentMembers() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeListSegmentMember() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createListSignupForm() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListSignupForm() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createListTwitterLeadGenCard() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListTwitterLeadGenCards() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListTwitterLeadGenCard() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createListWebhook() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListWebhooks() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getListWebhook() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeListWebhooks() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReports() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReport() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportAbuses() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportAbuse() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportAdvice() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportClickDetails() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportClickDetail() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportClickDetailMembers() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportClickDetailMember() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportDomainPerformance() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportEepurl() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportEmailActivities() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportEmailActivity() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportLocations() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportSentTo() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportSubReports() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportUnsubscribed() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getReportUnsubscribedByMember() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void searchCampaigns() {
-     * fail("Not yet implemented");
-     * } */
-    @Test
-    @InSequence(9)
-    public void searchMembers() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        SearchMembers searchMembers = mailChimpClient.searchMembers(email);
-        assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
-    }
-
-
-    @Test
-    @InSequence(10)
-    public void searchMembersByListId() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        SearchMembers searchMembers = mailChimpClient.searchMembers(email, listID);
-        //The expected value here is 1 because it only returns subscribed members
-        assertEquals(1l, searchMembers.getExactMatches().getTotalItems().longValue());
-    }
-
-
-    @Test
-    @InSequence(11)
-    public void createListSegment() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        SegmentCreate request = new SegmentCreate();
-        request.setName("Test segment");
-        final Segment segment = mailChimpClient.createSegment(listID, request);
-        assertNotNull(segment.getId());
-        segmentID = segment.getId();
-    }
-
-    @Test
-    @InSequence(12)
-    public void getListSegments() throws InterruptedException {
-        Thread.sleep(1000);//wait a sec
-        final Segments segments = mailChimpClient.getSegments(listID);
-        assertEquals(1, segments.getSegments().size());
-    }
-
-    @Test
-    @InSequence(13)
-    public void getListSegment() throws InterruptedException {
-        Thread.sleep(1000);
-        final Segment segment = mailChimpClient.getSegment(listID, segmentID);
-        assertEquals(segmentID, segment.getId());
-    }
-
-    @Test
-    @InSequence(14)
-    public void updateListSegmentAdd() throws InterruptedException {
-        Thread.sleep(1000);
-        SegmentModify request = new SegmentModify();
-        request.setMembersToAdd(Arrays.asList(email, "test." + email));
-        final SegmentModified segment = mailChimpClient.modifySegment(listID, segmentID, request);
-        assertNotNull(segment);
-        assertEquals(1, (int) segment.getTotalAdded());
+    public void getRoot_default_responseWithRootObject() {
+        Root root = mailChimpClient.getRoot();
+        assertEquals("8d3a3db4d97663a9074efcc16", root.getAccountId());
     }
 
     @Test(expected = MailChimpErrorException.class)
-    @InSequence(15)
-    public void updateListSegmentError() throws InterruptedException {
-        Thread.sleep(1000);
-        SegmentModify request = new SegmentModify();
-        request.setMembersToRemove(Arrays.asList("test." + email, "dummy@server.com"));
-        mailChimpClient.modifySegment(listID, segmentID, request);
+    public void getList_nonExistingListId_throwException() {
+        mailChimpClient.getList("nonExistingList");
     }
 
     @Test
-    @InSequence(16)
-    public void updateListSegmentRemove() throws InterruptedException {
-        Thread.sleep(1000);
-        SegmentModify request = new SegmentModify();
-        request.setMembersToRemove(Collections.singletonList(email));
-        final SegmentModified segment = mailChimpClient.modifySegment(listID, segmentID, request);
-        assertNotNull(segment);
-        assertEquals(1, (int) segment.getTotalRemoved());
+    public void getList_existingListId_oneList() {
+        SubscriberList subscriberList = mailChimpClient.getList("57afe96172");
+        assertEquals("57afe96172", subscriberList.getId());
     }
 
     @Test
-    @InSequence(17)
-    public void removeListSegment() throws InterruptedException {
-        Thread.sleep(1000);
-        mailChimpClient.removeSegment(listID, segmentID);
-
-        final Segments segments = mailChimpClient.getSegments(listID);
-        assertEquals(0, segments.getSegments().size());
+    public void getLists_offset0AndCount1_filledLists() {
+        ListsQuery query = ListsQuery.builder()
+                .offset(0)
+                .count(1)
+                .build();
+        SubscriberLists subscriberLists = mailChimpClient.getLists(query);
+        assertEquals(1, subscriberLists.getTotalItems().intValue());
+        assertEquals("57afe96172", subscriberLists.getLists().get(0).getId());
     }
 
     @Test
-    @InSequence(18)
-    public void removeListMember() {
-        Member member = mailChimpClient.getListMember(listID, Member.getSubscriberHash(email));
-        mailChimpClient.removeListMember(listID, member.getId());
+    public void getList_offset1AndCount1_emptyList() {
+        ListsQuery query = ListsQuery.builder()
+                .offset(1)
+                .count(1)
+                .build();
+        SubscriberLists subscriberLists = mailChimpClient.getLists(query);
+        assertEquals(0, subscriberLists.getLists().size());
     }
 
     @Test
-    @InSequence(19)
-    public void removeList() {
-        mailChimpClient.removeList(listID);
+    public void createList_valid_createdList(){
+        SubscriberList subscriberList = new SubscriberList();
+        subscriberList.setName("Freddie's Favorite Hats");
+        SubscriberList.Contact contact = SubscriberList.Contact.builder()
+                .company("Mailchimp")
+                .address1("675 Ponce De Leon Ave NE")
+                .address2("Suite 5000")
+                .city("Atlanta")
+                .state("GA")
+                .zip("30308")
+                .country("US")
+                .phone("")
+                .build();
+        subscriberList.setContact(contact);
+        subscriberList.setPermissionReminder("You're receiving this email because you signed up for updates about Freddie's newest hats.");
+        CampaignDefaults campaignDefaults = CampaignDefaults.builder()
+                .fromName("Freddie")
+                .fromEmail("freddie@freddiehats.com")
+                .subject("")
+                .language("en")
+                .build();
+        subscriberList.setCampaignDefaults(campaignDefaults);
+        subscriberList.setEmailTypeOption(true);
+
+        //create
+        subscriberList = mailChimpClient.createList(subscriberList);
+
+        //check
+        assertNotNull(subscriberList.getId());
+        assertEquals("Freddie's Favorite Hats", subscriberList.getName());
+        assertEquals("Atlanta", subscriberList.getContact().getCity());
+        assertEquals("Freddie", subscriberList.getCampaignDefaults().getFromName());
+        assertNotNull(subscriberList.getDateCreated());
+        assertEquals(0, subscriberList.getListRating().intValue());
+        assertNotNull(subscriberList.getSubscribeUrlShort());
+        assertNotNull(subscriberList.getSubscribeUrlLong());
+        assertNotNull(subscriberList.getBeamerAddress());
+        assertEquals(SubscriberList.Visibility.pub, subscriberList.getVisibility());
+        assertEquals(0, subscriberList.getStats().getMemberCount().intValue());
     }
-    /*
-     * @Test
-     * public void createTemplateFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getTemplateFolders() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getTemplateFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateTemplateFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void removeTemplateFolder() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void createTemplate() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getTemplates() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getTemplate() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void updateTemplate() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void deleteTemplate() {
-     * fail("Not yet implemented");
-     * }
-     *
-     * @Test
-     * public void getTemplateDefaultContent() {
-     * fail("Not yet implemented");
-     * }
-     */
+
+    @Test
+    public void removeList_existingId_removed(){
+        mailChimpClient.removeList("4ca5becb8d");//204
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void removeList_nonExistingId_throwException(){
+        mailChimpClient.removeList("nonExistingId");
+    }
+
+    @Test
+    public void getListMember_existingListIdAndExistingSubscruberHash_listMember(){
+        Member member = mailChimpClient.getListMember("57afe96172", "852aaa9532cb36adfb5e9fef7a4206a9");
+        assertEquals("57afe96172", member.getListId());
+        assertEquals("852aaa9532cb36adfb5e9fef7a4206a9", member.getSubscriberHash());
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void getListMember_nonExistingListId_throwException(){
+        mailChimpClient.getListMember("nonExistingListId", "852aaa9532cb36adfb5e9fef7a4206a9");
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void getListMember_existingListIdAndNonExistingSubscruberHash_throwException(){
+        mailChimpClient.getListMember("57afe96172", "nonExistingSubscriberHash");
+    }
+
+    @Test
+    public void createListMember_validListIdAndMember_createdListMember(){
+        Member member = Member.builder()
+                .emailAddress("urist.mcvankab+3@freddiesjokes.com")
+                .status(SubscribeStatus.subscribed)
+                //.tags(Arrays.asList(new String[] { "a tag", "another tag" }))
+                .build();
+
+        Member createdMember = mailChimpClient.createListMember("57afe96172", member);
+
+        assertNotNull(createdMember.getId());
+        assertEquals("urist.mcvankab+3@freddiesjokes.com", createdMember.getEmailAddress());
+        assertEquals(SubscribeStatus.subscribed, createdMember.getStatus());
+        //assertEquals(2, createdMember.getTagsCount());
+        assertEquals("198.2.191.34", createdMember.getIpOpt());
+        assertNotNull(createdMember.getTimestampOpt());
+        assertNotNull(createdMember.getLastChanged());
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void createListMember_nonExistingId_throwException(){
+        Member member = Member.builder()
+                .emailAddress("urist.mcvankab+3@freddiesjokes.com")
+                .status(SubscribeStatus.subscribed)
+                //.tags(Arrays.asList(new String[] { "a tag", "another tag" }))
+                .build();
+
+        mailChimpClient.createListMember("nonExistingId", member);
+    }
+
+    @Test
+    public void updateListMember_validListIdAndMember_updatedListMember(){
+        Member member = mailChimpClient.getListMember("57afe96172", "852aaa9532cb36adfb5e9fef7a4206a9");
+        member.setStatus(SubscribeStatus.unsubscribed);
+        Member updatedMember = mailChimpClient.updateListMember(member.getListId(), member.getSubscriberHash(), member);
+        assertEquals(SubscribeStatus.unsubscribed, updatedMember.getStatus());
+    }
+
+    @Test
+    public void removeListMember_validListIdAndMember_removedListMember(){
+        mailChimpClient.removeListMember("57afe96172", "852aaa9532cb36adfb5e9fef7a4206a9");
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void getListMembers_nonExistingListId_throwException(){
+        Members members = mailChimpClient.getListMembers("nonExistingId", ListMembersQuery.all());
+    }
+
+    @Test
+    public void getListMembers_firstPage_filledLists(){
+        Members members = mailChimpClient.getListMembers("57afe96172", ListMembersQuery.all());
+        assertEquals("57afe96172", members.getListId());
+        assertEquals(3, members.getMembers().size());
+    }
+
+    @Test
+    public void getListMembers_withStatusEqSubscribed_listWithUnsubscribed(){
+        ListMembersQuery query = ListMembersQuery.builder()
+                .status(SubscribeStatus.subscribed)
+                .build();
+        Members members = mailChimpClient.getListMembers("57afe96172", query);
+        assertEquals("57afe96172", members.getListId());
+        assertEquals(SubscribeStatus.subscribed, members.getMembers().get(0).getStatus());
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void getListMergeFields_nonExistingListId_throwException(){
+        mailChimpClient.getListMergeFields("nonExistingListId");
+    }
+
+    @Test
+    public void getListMergeFields_existingListId_listMergeFields(){
+        ListMergeFields listMergeFields = mailChimpClient.getListMergeFields("57afe96172");
+        assertEquals("57afe96172", listMergeFields.getListId());
+        assertEquals(2, listMergeFields.getMergeFields().size());
+    }
+
+    @Test
+    public void createMergeField_valid_createMergeField(){
+        ListMergeField listMergeField = new ListMergeField();
+        listMergeField.setName("FAVORITEJOKE");
+        listMergeField.setType(MergeType.Text);
+        ListMergeField createdListMergeField = mailChimpClient.createMergeField("57afe96172", listMergeField);
+
+        assertEquals("57afe96172", createdListMergeField.getListId());
+        assertEquals("FAVORITEJOKE", createdListMergeField.getName());
+        assertEquals(MergeType.Text, createdListMergeField.getType());
+    }
+
+    @Test
+    public void removeListMergeField_existingMergeId_removed(){
+        mailChimpClient.removeListMergeField("57afe96172", "3");
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void getSegments_nonExistingListId_throwException(){
+        mailChimpClient.getSegments("nonExistingListId");
+    }
+
+    @Test
+    public void getSegments_existingListId_segments(){
+        Segments segments = mailChimpClient.getSegments("57afe96172");
+        assertEquals("57afe96172", segments.getListId());
+        assertEquals(1, segments.getTotalItems().intValue());
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void getSegment_nonExistingListId_throwException(){
+        mailChimpClient.getSegment("nonExistingListId", 49381);
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void getSegment_existingListIdAndNonExistingSegmentId_throwException(){
+        mailChimpClient.getSegment("57afe96172", 0);
+    }
+
+    @Test
+    public void getSegment_existingListIdAndExistingSegmentId_segment(){
+        Segment segment = mailChimpClient.getSegment("57afe96172", 49381);
+        assertEquals("57afe96172", segment.getListId());
+        assertEquals(49381, segment.getId().intValue());
+    }
+
+    @Test
+    public void createSegment_validListIdAndSegment_createdSegment(){
+        SegmentCreate segment = new SegmentCreate();
+        segment.setName("The jokes that didn't quite make it.");
+
+        Segment createdSegment = mailChimpClient.createSegment("57afe96172", segment);
+
+        assertEquals("57afe96172", createdSegment.getListId());
+        assertEquals("The jokes that didn't quite make it.", createdSegment.getName());
+        assertNotNull(createdSegment.getCreatedAt());
+        assertNotNull(createdSegment.getUpdatedAt());
+    }
+
+    @Test
+    public void modifySegment_existingSegmentId_updatedSegment(){
+        SegmentModify segment = new SegmentModify();
+        segment.setMembersToAdd(Arrays.asList("freddie@mailchimp.com", "freddie@freddiesjokes.com"));
+        segment.setMembersToRemove(Arrays.asList("freddie@gmail.com", "freddie@yahoo.com", "freddie@hotmail.com"));
+
+        SegmentModified segmentModified = mailChimpClient.modifySegment("3da7c56ccb", 11281, segment);
+
+        assertEquals(2, segmentModified.getTotalAdded().intValue());
+        assertEquals(3, segmentModified.getTotalRemoved().intValue());
+    }
+
+    @Test
+    public void removeSegment_existingSegmentId_removedSegment(){
+        mailChimpClient.removeSegment("205d96e6b4", 445);
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void getBatch_nonExistingBatchId_throwException(){
+        mailChimpClient.getBatch("nonExistingBatchId");
+    }
+
+    @Test
+    public void getBatch_existingBatchId_batch(){
+        Batch batch = mailChimpClient.getBatch("8b2428d747");
+        assertEquals("8b2428d747", batch.getId());
+    }
+
+    @Test
+    public void getBatches_Offset0_filledBatchList(){
+        BatchesQuery query = BatchesQuery.builder()
+                .offset(0)
+                .count(1)
+                .build();
+        Batches batches = mailChimpClient.getBatches(query);
+        assertEquals(1, batches.getBatches().size());
+    }
+
+    @Test
+    public void getBatches_exceedsOffset_emptyList(){
+        BatchesQuery query = BatchesQuery.builder()
+                .offset(1)
+                .count(1)
+                .build();
+        Batches batches = mailChimpClient.getBatches(query);
+        assertEquals(0, batches.getBatches().size());
+    }
+
+    @Test
+    public void createBatch_validBatch_createdBatch(){
+        CreateBatch<Member> batch = new CreateBatch<>();
+        java.util.List<Operation<Member>> operations = new ArrayList<>();
+        operations.add(new Operation<>("POST","lists/624ea08019/members", Member.builder()
+                .emailAddress("freddie@mailchimp.com")
+                .status(SubscribeStatus.subscribed)
+                .build()));
+        operations.add(new Operation<>("POST","lists/624ea08019/members", Member.builder()
+                .emailAddress("freddy@mailchimp.com")
+                .status(SubscribeStatus.subscribed)
+                .build()));
+        operations.add(new Operation<>("POST","lists/624ea08019/members", Member.builder()
+                .emailAddress("fred@mailchimp.com")
+                .status(SubscribeStatus.subscribed)
+                .build()));
+        operations.add(new Operation<>("POST","lists/624ea08019/members", Member.builder()
+                .emailAddress("frederick@mailchimp.com")
+                .status(SubscribeStatus.subscribed)
+                .build()));
+        batch.setOperations(operations);
+
+        Batch createdBatch = mailChimpClient.createBatch(batch);
+
+        assertEquals("pending", createdBatch.getStatus());
+        assertEquals(0, createdBatch.getFinishedOperations().intValue());
+    }
+
+    @Test
+    public void removeBatch_existingBatchId_batchStopped(){
+        mailChimpClient.removeBatch("1");
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void searchMembers_emptyQuery_throwException(){
+        mailChimpClient.searchMembers("");
+    }
+
+    @Test
+    public void searchMembers_validQuery_results(){
+        SearchMembers searchMembers = mailChimpClient.searchMembers("freddie@");
+        assertEquals(6, searchMembers.getFullSearch().getTotalItems().intValue());
+        assertEquals("urist.mcvankab+6@freddiesjokes.com", searchMembers.getFullSearch().getMembers().get(0).getEmailAddress());
+    }
+
+    @Test(expected = MailChimpErrorException.class)
+    public void searchMembers_invalidListId_throwException(){
+        mailChimpClient.searchMembers("freddie@", "1");
+    }
+
+    @Test
+    public void searchMembers_validQueryAndValidListId_results(){
+        SearchMembers searchMembers = mailChimpClient.searchMembers("freddie@", "57afe96172");
+        assertEquals(6, searchMembers.getFullSearch().getTotalItems().intValue());
+        assertEquals("urist.mcvankab+6@freddiesjokes.com", searchMembers.getFullSearch().getMembers().get(0).getEmailAddress());
+    }
+
+    //TODO: check error response: https://github.com/OpenFeign/feign/blob/master/core/src/test/java/feign/FeignTest.java
+    //TODO: implement more tests for error situations
+    //TODO: implement more query parameters
+    //TODO: implement paged results
+    //TODO: add method to get next paged response
 }

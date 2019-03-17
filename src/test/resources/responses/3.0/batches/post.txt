@@ -1,0 +1,36 @@
+HTTP/1.1 200 OK
+Server: nginx
+Date: Thu, 12 May 2016 17:43:33 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 619
+Connection: keep-alive
+Vary: Accept-Encoding
+X-Request-Id: 2a5f22fd-5456-4d8f-801e-3f8aa86d3e9c
+Link: <https://api.mailchimp.com/schema/3.0/Batches/Instance.json>; rel="describedBy"
+
+
+{
+  "id": "8b2428d747",
+  "status": "pending",
+  "total_operations": 0,
+  "finished_operations": 0,
+  "errored_operations": 0,
+  "submitted_at": "2016-05-12T17:43:32+00:00",
+  "completed_at": "",
+  "response_body_url": "",
+  "_links": [
+    {
+      "rel": "parent",
+      "href": "https://usX.api.mailchimp.com/3.0/batches",
+      "method": "GET",
+      "targetSchema": "https://api.mailchimp.com/schema/3.0/Batches/Collection.json",
+      "schema": "https://api.mailchimp.com/schema/3.0/CollectionLinks/Batches.json"
+    },
+    {
+      "rel": "self",
+      "href": "https://usX.api.mailchimp.com/3.0/batches/8b2428d747",
+      "method": "GET",
+      "targetSchema": "https://api.mailchimp.com/schema/3.0/Batches/Instance.json"
+    }
+  ]
+}

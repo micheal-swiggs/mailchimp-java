@@ -1,5 +1,7 @@
 package com.mailchimp.domain;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
@@ -8,25 +10,20 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * @author Ed Bras
  */
 public enum SubscribeStatus {
-
-    SUBSCRIBED,
+    subscribed,
     /**
      * Used to archive a subscriber.
      */
-    UNSUBSCRIBED,
+    unsubscribed,
     /**
      * Used for double opt-in. The subscriber will receive an email to confirm his subscription.<br>
      * Subscribing a subscriber with the same email address, will result in an http 400 error indicating that the user already exists. As such, he will
      * not receive a confirmation email again.
      */
-    PENDING,
+    pending,
     /**
      * Used to archive a subscriber.
      */
-    CLEANED;
+    cleaned;
 
-    @JsonValue
-    public String toJson() {
-        return name().toLowerCase();
-    }
 }

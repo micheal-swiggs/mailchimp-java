@@ -13,9 +13,10 @@ import lombok.ToString;
  *
  * @author stevensnoeijen
  */
-@ToString(of = {"title", "status", "detail"})
+@ToString
 public class MailChimpError {
 
+    @ToString
     public static class BodyError {
 
         @JsonProperty
