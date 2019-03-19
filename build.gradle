@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.mailchimp'
-version '0.5.4'
+version '1.0.0'
 
 sourceCompatibility = 1.8
 
