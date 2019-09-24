@@ -82,21 +82,11 @@ public class Member {
     private SubscribeStatus status;
 
     @JsonProperty("merge_fields")
+    @Builder.Default
     @Getter
     @Setter
     private Map<String, String> mergeFields = new HashMap<>();
 
-//    @JsonProperty
-//    @Getter
-//    @Setter
-//    private Map<String, Boolean> interests = new HashMap<>();
-    //@JsonProperty
-    //@Getter
-    //@JsonIgnore
-    //private SubscriberStats stats = new SubscriberStats();
-//    @JsonProperty("ip_signup")
-//    @Getter
-//    private String ipSignup;
     @JsonProperty("timestamp_signup")
     @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
     @JsonSerialize(using = MailChimpZonedDateTimeSerializer.class)
@@ -157,6 +147,7 @@ public class Member {
     private String listId;
 
     @JsonProperty("interests")
+    @Builder.Default
     private Map<String,Boolean> interests = new HashMap<>();
 
     @JsonIgnore
