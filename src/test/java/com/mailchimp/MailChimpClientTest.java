@@ -5,6 +5,7 @@ import com.mailchimp.domain.SubscriberList;
 import com.mailchimp.query.BatchesQuery;
 import com.mailchimp.query.ListMembersQuery;
 import com.mailchimp.query.ListsQuery;
+import feign.FeignException;
 import feign.Response;
 import feign.mock.HttpMethod;
 import feign.mock.MockClient;
@@ -486,7 +487,7 @@ public class MailChimpClientTest {
         mailChimpClient.removeBatch("1");
     }
 
-    @Test(expected = MailChimpErrorException.class)
+    @Test(expected = FeignException.NotFound.class)
     public void searchMembers_emptyQuery_throwException(){
         mailChimpClient.searchMembers("");
     }
