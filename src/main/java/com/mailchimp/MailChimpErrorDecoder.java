@@ -49,7 +49,7 @@ public class MailChimpErrorDecoder implements ErrorDecoder {
             }
         } else if (response.status() == 503) { // 503: Service (temporary) unavailable
             Date retryAfter = new RetryAfterDecoder().apply(firstOrNull(response.headers(), RETRY_AFTER));
-            return new RetryableException(response.reason(), response.request().httpMethod(), retryAfter);
+            return new RetryableException(response.status(), response.reason(), response.request().httpMethod(), retryAfter, response.request());
         } else {
             return new ErrorDecoder.Default().decode(methodKey, response);
         }
