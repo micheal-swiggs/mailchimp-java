@@ -11,3 +11,5 @@ bin/
 /.nb-gradle/
 test.properties
 out
+Main.java
+*.log

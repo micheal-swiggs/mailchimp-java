@@ -2,6 +2,7 @@ package com.mailchimp.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.mailchimp.domain.Report.IndustryStats;
 import com.mailchimp.jackson.MailChimpZonedDateTimeDeserializer;
 import java.time.ZonedDateTime;
 import lombok.Getter;
@@ -14,33 +15,6 @@ import lombok.Getter;
  * @author stevensnoeijen
  */
 public class Root {
-
-    /**
-     * The average campaign statistics for all campaigns in the account’s specified industry.
-     */
-    public static class IndustryStats {
-
-        /**
-         * The average unique open rate for all campaigns in the account’s specified industry.
-         */
-        @JsonProperty("open_rate")
-        @Getter
-        private double openRate;
-
-        /**
-         * The average bounce rate for all campaigns in the account’s specified industry.
-         */
-        @JsonProperty("bounce_rate")
-        @Getter
-        private double bounceRate;
-
-        /**
-         * The average unique click rate for all campaigns in the account’s specified industry.
-         */
-        @JsonProperty("click_rate")
-        @Getter
-        private double clickRate;
-    }
 
     /**
      * The MailChimp account id, used for features like list <a href="http://kb.mailchimp.com/lists/signup-forms/create-signup-forms-and-response-emails?utm_source=mc-api&amp;utm_medium=docs&amp;utm_campaign=apidocs">subscribe forms</a>.

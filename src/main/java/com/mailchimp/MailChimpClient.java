@@ -4,6 +4,7 @@ import com.mailchimp.domain.*;
 import com.mailchimp.query.BatchesQuery;
 import com.mailchimp.query.ListMembersQuery;
 import com.mailchimp.query.ListsQuery;
+import com.mailchimp.query.ReportsQuery;
 import feign.Param;
 import feign.QueryMap;
 import feign.RequestLine;
@@ -15,6 +16,7 @@ public interface MailChimpClient {
 
     /**
      * Gets API Root.
+     *
      * @return root info about the account
      */
     @RequestLine("GET /3.0/")
@@ -22,16 +24,19 @@ public interface MailChimpClient {
 
     /**
      * Gets member by subscriberHash in list.
+     *
      * @param listId if of the list
      * @param subscriberHash hash of member's email (see {@link Member#getSubscriberHash(String)})
      * @return member
      * @throws MailChimpErrorException when listId or subscriberHash was not found
      */
     @RequestLine("GET /3.0/lists/{list-id}/members/{subscriber-hash}")
-    Member getListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
+    Member getListMember(@Param("list-id") String listId,
+        @Param("subscriber-hash") String subscriberHash);
 
     /**
      * Creates member in list.
+     *
      * @param listId id of the list where to create the member in
      * @param member to create
      * @return created member
@@ -42,6 +47,7 @@ public interface MailChimpClient {
 
     /**
      * Updates member in a list.
+     *
      * @param listId id of the list where to create the member in
      * @param subscriberHash hash of member's email (see {@link Member#getSubscriberHash(String)})
      * @param member to update
@@ -49,19 +55,23 @@ public interface MailChimpClient {
      * @throws MailChimpErrorException when the list-id was not found
      */
     @RequestLine("PUT /3.0/lists/{list-id}/members/{subscriber-hash}")
-    Member updateListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash, Member member);
+    Member updateListMember(@Param("list-id") String listId,
+        @Param("subscriber-hash") String subscriberHash, Member member);
 
     /**
      * Removes member from list.
+     *
      * @param listId id of the list
      * @param subscriberHash hash of member's email (see {@link Member#getSubscriberHash(String)})
      * @throws MailChimpErrorException when listId or subscriberHash was not found
      */
     @RequestLine("DELETE /3.0/lists/{list-id}/members/{subscriber-hash}")
-    void removeListMember(@Param("list-id") String listId, @Param("subscriber-hash") String subscriberHash);
+    void removeListMember(@Param("list-id") String listId,
+        @Param("subscriber-hash") String subscriberHash);
 
     /**
      * Create subscriberList.
+     *
      * @param subscriberList to create
      * @return created subscriberList
      */
@@ -70,6 +80,7 @@ public interface MailChimpClient {
 
     /**
      * Removes list.
+     *
      * @param listId id of the list
      * @throws MailChimpErrorException when listId was not found
      */
@@ -78,6 +89,7 @@ public interface MailChimpClient {
 
     /**
      * Gets list.
+     *
      * @param listId id of the list
      * @return found list
      * @throws MailChimpErrorException when listId was not found
@@ -87,6 +99,7 @@ public interface MailChimpClient {
 
     /**
      * Gets lists by query.
+     *
      * @param query to filter results on
      * @return filtered list of lists
      */
@@ -95,6 +108,7 @@ public interface MailChimpClient {
 
     /**
      * Gets list members.
+     *
      * @param listId id of the list
      * @param query to filter results on
      * @return filtered members
@@ -105,6 +119,7 @@ public interface MailChimpClient {
 
     /**
      * Get list's member-fields.
+     *
      * @param listId id of the list
      * @return list's member-fields
      * @throws MailChimpErrorException when listId was not found
@@ -114,6 +129,7 @@ public interface MailChimpClient {
 
     /**
      * Create merge-field for list.
+     *
      * @param listId id of the list
      * @param mergeField merge-field to create
      * @return created merge-field for the list
@@ -124,6 +140,7 @@ public interface MailChimpClient {
 
     /**
      * Removes merge-field from list.
+     *
      * @param listId id of the list
      * @param mergeId id of merge-field
      * @throws MailChimpErrorException when listId or mergeId was not found
@@ -133,6 +150,7 @@ public interface MailChimpClient {
 
     /**
      * Create segment in list.
+     *
      * @param listId id of the list
      * @param segment segment to create
      * @return created segment
@@ -143,6 +161,7 @@ public interface MailChimpClient {
 
     /**
      * Modify a segment in list.
+     *
      * @param listId id of the list
      * @param segmentId id of segment
      * @param segment segment to be modified
@@ -150,10 +169,12 @@ public interface MailChimpClient {
      * @throws MailChimpErrorException when listId was not found
      */
     @RequestLine("POST /3.0/lists/{list-id}/segments/{segment-id}")
-    SegmentModified modifySegment(@Param("list-id") String listId, @Param("segment-id") Integer segmentId, SegmentModify segment);
+    SegmentModified modifySegment(@Param("list-id") String listId,
+        @Param("segment-id") Integer segmentId, SegmentModify segment);
 
     /**
      * Get segments in list.
+     *
      * @param listId id of the list
      * @return segments of the list
      * @throws MailChimpErrorException when listId was not found
@@ -163,6 +184,7 @@ public interface MailChimpClient {
 
     /**
      * Get a segment in the list.
+     *
      * @param listId id of the list
      * @param segmentId id of the segment
      * @return segment by id
@@ -173,6 +195,7 @@ public interface MailChimpClient {
 
     /**
      * Removes segment.
+     *
      * @param listId id of the list
      * @param segmentId id of the segment
      * @throws MailChimpErrorException when listId or segmentId was not found
@@ -182,6 +205,7 @@ public interface MailChimpClient {
 
     /**
      * Create batch.
+     *
      * @param batch to create
      * @return created batch
      */
@@ -190,6 +214,7 @@ public interface MailChimpClient {
 
     /**
      * Get batch.
+     *
      * @param batchId id of batch
      * @return found batch
      * @throws MailChimpErrorException when batchId was not found
@@ -199,6 +224,7 @@ public interface MailChimpClient {
 
     /**
      * Get batches by filter.
+     *
      * @param query to filter
      * @return filtered batches
      */
@@ -207,6 +233,7 @@ public interface MailChimpClient {
 
     /**
      * Removes batch
+     *
      * @param batchId id of batch
      * @throws MailChimpErrorException when batchId was not found
      */
@@ -215,6 +242,7 @@ public interface MailChimpClient {
 
     /**
      * Search members by query.
+     *
      * @param query to search by
      * @return found members by query
      */
@@ -223,6 +251,7 @@ public interface MailChimpClient {
 
     /**
      * Search members by query and listId.
+     *
      * @param query to search by
      * @param listId id of list
      * @return found members by query and listId
@@ -233,9 +262,27 @@ public interface MailChimpClient {
 
     /**
      *
+     */
+    @RequestLine("GET /3.0/reports")
+    Reports getReports(@QueryMap ReportsQuery query);
+
+    @RequestLine("GET /3.0/reports/{campaign_id}/click-details")
+    CampaignClickDetails getCampaignClickDetails(@Param("campaign_id") String campaignId);
+
+    @RequestLine("GET /3.0/reports/{campaign_id}/click-details/{link_id}/members")
+    ClickReportsMembers getClickReportsMembers(
+        @Param("campaign_id") String campaignId,
+        @Param("link_id") String linkId
+    );
+
+    @RequestLine("GET /3.0/lists/{list_id}/members/{subscriber_hash}/activity")
+    MemberActivity getMemberActivity(@Param("list_id") String listId,
+        @Param("subscriber_hash") String subscriberHash);
+
+    /**
      * @return builder to build the client
      */
-    static MailChimpClientBuilder builder(){
+    static MailChimpClientBuilder builder() {
         return new MailChimpClientBuilder();
     }
 }
