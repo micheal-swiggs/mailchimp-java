@@ -130,10 +130,6 @@ public class Member {
     @Setter
     private String emailClient;
 
-//    @JsonProperty
-//    @Getter
-//    @Setter
-//    private Location location;
     /**
      * When creating a subscriber that already exists this status will be used.
      */
