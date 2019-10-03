@@ -84,80 +84,18 @@ public class SubscriberList {
         @Getter
         @Setter
         private String phone;
-
-        public String getCompany() {
-            return company;
-        }
-
-        public void setCompany(String company) {
-            this.company = company;
-        }
-
-        public String getAddress1() {
-            return address1;
-        }
-
-        public void setAddress1(String address1) {
-            this.address1 = address1;
-        }
-
-        public String getAddress2() {
-            return address2;
-        }
-
-        public void setAddress2(String address2) {
-            this.address2 = address2;
-        }
-
-        public String getCity() {
-            return city;
-        }
-
-        public void setCity(String city) {
-            this.city = city;
-        }
-
-        public String getState() {
-            return state;
-        }
-
-        public void setState(String state) {
-            this.state = state;
-        }
-
-        public String getZip() {
-            return zip;
-        }
-
-        public void setZip(String zip) {
-            this.zip = zip;
-        }
-
-        public String getCountry() {
-            return country;
-        }
-
-        public void setCountry(String country) {
-            this.country = country;
-        }
-
-        public String getPhone() {
-            return phone;
-        }
-
-        public void setPhone(String phone) {
-            this.phone = phone;
-        }
     }
 
     /**
      * A string that uniquely identifies this list.
      */
     @Getter
+    @Setter
     private String id;
 
     @JsonProperty("total_items")
     @Getter
+    @Setter
     private Integer totalItems;
 
     /**
@@ -172,6 +110,7 @@ public class SubscriberList {
      */
     @JsonProperty("contact")
     @Getter
+    @Setter
     private Contact contact = new Contact();
 
     /**
@@ -195,6 +134,7 @@ public class SubscriberList {
      */
     @JsonProperty("campaign_defaults")
     @Getter
+    @Setter
     private CampaignDefaults campaignDefaults = new CampaignDefaults();
 
     /**
@@ -218,6 +158,7 @@ public class SubscriberList {
      */
     @JsonProperty("date_created")
     @Getter
+    @Setter
     @JsonDeserialize(using = MailChimpZonedDateTimeDeserializer.class)
     private ZonedDateTime dateCreated;
 
@@ -226,6 +167,7 @@ public class SubscriberList {
      */
     @JsonProperty("list_rating")
     @Getter
+    @Setter
     private Integer listRating;
 
     /**
@@ -243,6 +185,7 @@ public class SubscriberList {
      */
     @JsonProperty("subscribe_url_short")
     @Getter
+    @Setter
     private String subscribeUrlShort;
 
     /**
@@ -250,6 +193,7 @@ public class SubscriberList {
      */
     @JsonProperty("subscribe_url_long")
     @Getter
+    @Setter
     private String subscribeUrlLong;
 
     /**
@@ -257,6 +201,7 @@ public class SubscriberList {
      */
     @JsonProperty("beamer_address")
     @Getter
+    @Setter
     private String beamerAddress;
 
     /**
@@ -270,155 +215,13 @@ public class SubscriberList {
      * Any list-specific modules installed for this list.
      */
     @Getter
+    @Setter
     private java.util.List<String> modules;
 
     /**
      * Stats for the list. Many of these are cached for at least five minutes.
      */
     @Getter
+    @Setter
     private ListStats stats;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public Integer getTotalItems() {
-        return totalItems;
-    }
-
-    public void setTotalItems(Integer totalItems) {
-        this.totalItems = totalItems;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Contact getContact() {
-        return contact;
-    }
-
-    public void setContact(Contact contact) {
-        this.contact = contact;
-    }
-
-    public String getPermissionReminder() {
-        return permissionReminder;
-    }
-
-    public void setPermissionReminder(String permissionReminder) {
-        this.permissionReminder = permissionReminder;
-    }
-
-    public Boolean getUseArchiveBar() {
-        return useArchiveBar;
-    }
-
-    public void setUseArchiveBar(Boolean useArchiveBar) {
-        this.useArchiveBar = useArchiveBar;
-    }
-
-    public CampaignDefaults getCampaignDefaults() {
-        return campaignDefaults;
-    }
-
-    public void setCampaignDefaults(CampaignDefaults campaignDefaults) {
-        this.campaignDefaults = campaignDefaults;
-    }
-
-    public String getNotifyOnSubscribe() {
-        return notifyOnSubscribe;
-    }
-
-    public void setNotifyOnSubscribe(String notifyOnSubscribe) {
-        this.notifyOnSubscribe = notifyOnSubscribe;
-    }
-
-    public String getNotifyOnUnsubscribe() {
-        return notifyOnUnsubscribe;
-    }
-
-    public void setNotifyOnUnsubscribe(String notifyOnUnsubscribe) {
-        this.notifyOnUnsubscribe = notifyOnUnsubscribe;
-    }
-
-    public ZonedDateTime getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(ZonedDateTime dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public Integer getListRating() {
-        return listRating;
-    }
-
-    public void setListRating(Integer listRating) {
-        this.listRating = listRating;
-    }
-
-    public Boolean getEmailTypeOption() {
-        return emailTypeOption;
-    }
-
-    public void setEmailTypeOption(Boolean emailTypeOption) {
-        this.emailTypeOption = emailTypeOption;
-    }
-
-    public String getSubscribeUrlShort() {
-        return subscribeUrlShort;
-    }
-
-    public void setSubscribeUrlShort(String subscribeUrlShort) {
-        this.subscribeUrlShort = subscribeUrlShort;
-    }
-
-    public String getSubscribeUrlLong() {
-        return subscribeUrlLong;
-    }
-
-    public void setSubscribeUrlLong(String subscribeUrlLong) {
-        this.subscribeUrlLong = subscribeUrlLong;
-    }
-
-    public String getBeamerAddress() {
-        return beamerAddress;
-    }
-
-    public void setBeamerAddress(String beamerAddress) {
-        this.beamerAddress = beamerAddress;
-    }
-
-    public Visibility getVisibility() {
-        return visibility;
-    }
-
-    public void setVisibility(Visibility visibility) {
-        this.visibility = visibility;
-    }
-
-    public java.util.List<String> getModules() {
-        return modules;
-    }
-
-    public void setModules(java.util.List<String> modules) {
-        this.modules = modules;
-    }
-
-    public ListStats getStats() {
-        return stats;
-    }
-
-    public void setStats(ListStats stats) {
-        this.stats = stats;
-    }
 }

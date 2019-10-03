@@ -19,7 +19,7 @@ public class MailChimpClientBuilder {
     //feign specific options
     private Client client = new Client.Default(null, null);
     private Logger.Level logLevel = Logger.Level.NONE;
-    private Logger logger = new Logger.NoOpLogger();
+    private Logger logger = new Logger.JavaLogger("HttpLogger");
 
     //mailchimp specific options
     private RequestInterceptor authRequestInterceptor;

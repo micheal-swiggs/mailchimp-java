@@ -22,7 +22,7 @@ public class MailChimpErrorException extends FeignException {
      * Creates a new instance of <code>MailChimpErrorException</code> without detail message.
      */
     public MailChimpErrorException(int status, String message, MailChimpError error) {
-        super(message);
+        super(status, message);
         this.error = error;
     }
 
